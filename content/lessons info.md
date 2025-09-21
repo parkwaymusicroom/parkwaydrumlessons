@@ -1,10 +1,10 @@
-
-## In These Lessons Each Student Will Learn To:
+## These Lessons Will Teach Students To:
 
 - Build coordination, timing, and rhythm step by step  
-- Play patterns they can use with music and other instruments  
+- Play the drum kit with other musicians
+- learn patterns that fit music and other instruments  
 - Read basic drum notation for practice and reference  
-- Find the beat on their own with confidence  
-- Explore fundamental rudiments as building blocks  
-- Express themselves through creativity and free play  
-- Grow with a clear, broad-strokes approach that builds steadily
+- Find and keep the beat on their own with confidence  
+- Explore fundamental rudiments as building blocks for the kit  
+- Express themselves through creativity and free play on the drums  
+- Grow with a clear, steady approach that develops both skills and musicality  
