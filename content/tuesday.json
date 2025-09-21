@@ -1,0 +1,15 @@
+{
+  "day": "Tuesday",
+  "hours": [
+    {"time": "09:00-10:00", "status": "open", "label": ""},
+    {"time": "10:00-11:00", "status": "booked", "label": "Team Meeting"},
+    {"time": "11:00-12:00", "status": "open", "label": ""},
+    {"time": "12:00-13:00", "status": "booked", "label": "Lunch"},
+    {"time": "13:00-14:00", "status": "open", "label": ""},
+    {"time": "14:00-15:00", "status": "booked", "label": "Client Call"},
+    {"time": "15:00-16:00", "status": "open", "label": ""},
+    {"time": "16:00-17:00", "status": "booked", "label": "Project Review"},
+    {"time": "17:00-18:00", "status": "open", "label": ""},
+    {"time": "18:00-19:00", "status": "open", "label": ""}
+  ]
+}

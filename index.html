@@ -1,0 +1,1532 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Parkway Drum Lessons</title>
+
+  <!-- External stylesheets -->
+  <link rel="stylesheet" href="css/variables.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/animations.css" />
+
+<!-- EmailJS SDK (only if you don't already have it) -->
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+  (function(){
+    if (window.emailjs && typeof emailjs.init === 'function') {
+      // Replace with your EmailJS Public Key (Integration → Public Key)
+      emailjs.init('KJyxG5a6vgKkyro1N');
+      console.log('EmailJS initialized');
+    } else {
+      console.warn('EmailJS SDK not available');
+    }
+  })();
+</script>
+
+
+  <!-- Minimal modal/toast styles (inline for availability) -->
+  <style>
+    /* =====================================================
+       THEME VARIABLES — single place to override modal/toast
+       ===================================================== */
+    :root{
+      /* Overlay backgrounds */
+      --modal-overlay-bg: rgba(0, 0, 0, 0.267);
+      --toast-overlay-bg: rgba(27, 27, 27, 0.384);
+
+      /* Modal / window */
+      --modal-bg: rgba(17, 17, 17, 0.712);
+      --modal-radius: 12px;
+      --modal-box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+      /* Default modal border values fall back to section vars (so variables.css/tuner continue to work) */
+      --modal-border-width: var(--modal-border-width, var(--section-border-width, 1px));
+      --modal-border-color: var(--modal-border-color, var(--section-border-color, rgba(255, 255, 255, 0.144)));
+      --modal-header-border: rgba(255,255,255,0.03);
+
+      /* Time blocks inside modal / inline schedule */
+      --time-block-bg: rgba(255,255,255,0.02);
+      --time-block-border: var(--time-block-border, var(--section-border-color, rgba(255,255,255,0.03)));
+      --time-block-disabled-opacity: 0.5;
+
+      /* Toast menu */
+      --toast-bg: rgba(20, 20, 20, 0.98);
+      --toast-radius: 10px;
+      --toast-box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+      --toast-border-color: var(--toast-border-color, var(--section-border-color, rgba(255,255,255,0.04)));
+
+      /* Toast buttons */
+      --toast-cancel-bg: rgba(255,255,255,0.04);
+      --toast-confirm-bg: rgba(0,140,200,0.12);
+
+      /* Convenience aliases (do not overwrite these in variables.css unless you intend to)
+         Existing code uses --section-border-*; keep that authoritative for content sections. */
+      --section-border-width: var(--section-border-width, 1px);
+      --section-border-color: var(--section-border-color, rgba(255,255,255,0.06));
+    }
+
+    /* =====================================================
+       Modal / Window
+       ===================================================== */
+    .schedule-window-overlay, .schedule-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--modal-overlay-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+    }
+
+    .schedule-window, .schedule-modal {
+      width: min(760px, 94%);
+      max-height: 86vh;
+      overflow: auto;
+      background: var(--modal-bg);
+      border-radius: var(--modal-radius);
+      padding: 12px;
+      box-shadow: var(--modal-box-shadow);
+      border: var(--modal-border-width) solid var(--modal-border-color);
+      color: inherit;
+    }
+
+    .schedule-window-header, .modal-header {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      padding-bottom:8px;
+      border-bottom:1px solid var(--modal-header-border);
+      margin-bottom:8px;
+    }
+
+    .schedule-window-close, .close-btn {
+      background:transparent;
+      border:0;
+      font-size:18px;
+      cursor:pointer;
+      color:inherit;
+    }
+
+    .modal-schedule-blocks, .schedule-blocks {
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      padding:6px 0;
+    }
+
+    .modal-time-block, .time-block {
+      text-align:left;
+      padding:8px 10px;
+      border-radius:8px;
+      border: var(--section-border-width, 1px) solid var(--time-block-border);
+      cursor:pointer;
+      background: var(--time-block-bg);
+    }
+
+    .modal-time-block[aria-disabled="true"], .time-block[aria-disabled="true"] {
+      opacity: var(--time-block-disabled-opacity);
+      cursor:default;
+    }
+
+    /* =====================================================
+       Toast
+       ===================================================== */
+    .toast-overlay {
+      position: fixed;
+      inset: 0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index:11000;
+      background: var(--toast-overlay-bg);
+    }
+
+    .toast-menu {
+      width: min(420px, 92%);
+      background: var(--toast-bg);
+      padding: 12px;
+      border-radius: var(--toast-radius);
+      box-shadow: var(--toast-box-shadow);
+      border: var(--section-border-width,1px) solid var(--toast-border-color);
+    }
+
+    .toast-menu input[type="text"] {
+      width:100%;
+      padding:8px;
+      margin:8px 0;
+      border-radius:6px;
+      border:1px solid var(--toast-border-color);
+      background:transparent;
+      color:inherit;
+    }
+
+    .toast-menu textarea {
+      width:100%;
+      padding:8px;
+      margin:8px 0;
+      border-radius:6px;
+      border:1px solid var(--toast-border-color);
+      background:transparent;
+      color:inherit;
+      resize:vertical;
+    }
+
+    .toast-buttons { display:flex; gap:8px; justify-content:flex-end; }
+    .toast-btn { padding:8px 10px; border-radius:8px; border:0; cursor:pointer; }
+    .toast-btn.cancel { background: var(--toast-cancel-bg); }
+    .toast-btn.confirm { background: var(--toast-confirm-bg); }
+
+    /* transient confirmation toast */
+    .submit-toast {
+      position: fixed;
+      bottom: 22px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--toast-bg);
+      padding: 10px 14px;
+      border-radius: 8px;
+      box-shadow: var(--toast-box-shadow);
+      border: var(--section-border-width,1px) solid var(--toast-border-color);
+      z-index:13000;
+      font-size: 14px;
+      opacity: 0;
+      transition: opacity 220ms ease, transform 220ms ease;
+      pointer-events: none;
+    }
+    .submit-toast.show { opacity: 1; transform: translateX(-50%) translateY(-6px); pointer-events: auto; }
+
+    .modal-subtitle { font-size: 14px; opacity: 0.9; margin-top:6px; margin-bottom:8px; }
+  </style>
+
+  <!-- Prevent tuner blink by reading CSS var before paint -->
+  <script>
+    (function(){
+      try {
+        const v = getComputedStyle(document.documentElement).getPropertyValue('--default-tuner-visible').trim();
+        document.documentElement.setAttribute('data-default-tuner-visible', v === '' ? 'false' : v);
+      } catch (e) {
+        document.documentElement.setAttribute('data-default-tuner-visible', 'false');
+      }
+    })();
+  </script>
+</head>
+
+<body>
+  <div class="app" id="app">
+    <nav class="nav" role="navigation" aria-label="Primary">
+      <div style="display:flex;align-items:center">
+        <div class="brand"><h1>Parkway Drum Lessons</h1></div>
+        <div class="top-config" aria-hidden="true">
+          <div style="font-size:12px;opacity:0.9">Shapes: <span id="topShapeCount">24</span></div>
+          <div style="font-size:12px;opacity:0.9">Blur: <span id="topBlurVal">13</span>px</div>
+        </div>
+      </div>
+
+      <div class="nav-links" id="navLinks" aria-hidden="true"></div>
+
+      <div style="display:flex;align-items:center;gap:8px">
+        <button id="tunerToggle" class="tuner-toggle-btn" title="Toggle Tuner" aria-pressed="false" data-visible="false">Tuner</button>
+        <div class="hamburger">
+          <button id="hamburgerBtn" aria-expanded="false" aria-controls="mobileMenu" aria-label="Toggle menu">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M4 7h16" stroke-linecap="round"></path>
+              <path d="M4 12h16" stroke-linecap="round"></path>
+              <path d="M4 17h16" stroke-linecap="round"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <div class="menu-overlay" id="menuOverlay" aria-hidden="true"></div>
+    <div class="menu-sheet" id="mobileMenu" role="menu" aria-label="Mobile menu"></div>
+
+    <div id="three-wrap" aria-hidden="true"></div>
+
+    <aside id="tuner" class="tuner-floating" data-visible="var(--default-tuner-visible)" aria-label="Background & content tuner" role="region">
+      <h4>Tuner</h4>
+      <div class="row">
+        <label for="shapeCount">Shape count</label>
+        <input id="shapeCount" type="number" min="0" max="200" step="1" value="24" />
+      </div>
+
+      <div class="row">
+        <label for="orbitFactor">Orbit speed</label>
+        <input id="orbitFactor" type="range" min="0.0001" max="0.005" step="0.0001" value="0.0005" />
+        <div style="width:44px;text-align:right;font-size:12px" id="orbitFactorVal">0.0005</div>
+      </div>
+
+      <div class="row">
+        <label for="locationRandom">Location randomness</label>
+        <input id="locationRandom" type="range" min="0" max="1" step="0.05" value="1" />
+        <div style="width:32px;text-align:right;font-size:12px" id="locRandVal">1.0</div>
+      </div>
+
+      <div class="row">
+        <label for="shapeMode">Shape selection</label>
+        <select id="shapeMode">
+          <option value="mixed">Random (mixed)</option>
+          <option value="box">All boxes</option>
+          <option value="sphere">All spheres</option>
+          <option value="cone">All cones</option>
+          <option value="icosahedron">All icosahedrons</option>
+        </select>
+      </div>
+
+      <hr style="border:0;border-top:1px solid rgba(255,255,255,0.04);margin:8px 0" />
+
+      <div class="row">
+        <label for="sectionExtra">Extra scroll (vh)</label>
+        <input id="sectionExtra" type="range" min="0" max="200" step="5" value="0" />
+        <div style="width:36px;text-align:right;font-size:12px" id="sectionExtraVal">0</div>
+      </div>
+
+      <div class="row">
+        <label for="sectionBlur">Section blur (px)</label>
+        <input id="sectionBlur" type="range" min="0" max="24" step="1" value="13" />
+        <div style="width:36px;text-align:right;font-size:12px" id="sectionBlurVal">13</div>
+      </div>
+
+      <div class="row">
+        <label for="sectionAlpha">Section alpha</label>
+        <input id="sectionAlpha" type="range" min="0" max="0.3" step="0.01" value="0.06" />
+        <div style="width:36px;text-align:right;font-size:12px" id="sectionAlphaVal">0.06</div>
+      </div>
+
+      <hr style="border:0;border-top:1px solid rgba(255,255,255,0.04);margin:8px 0" />
+      <div class="border-row">
+        <label for="sectionBorderWidth">Border width</label>
+        <input id="sectionBorderWidth" type="range" min="0" max="5" step="1" value="1" />
+        <div style="width:24px;text-align:right;font-size:12px" id="sectionBorderWidthVal">1px</div>
+      </div>
+
+      <div class="border-row">
+        <label for="sectionBorderColor">Border color</label>
+        <input id="sectionBorderColor" type="color" value="#ffffff" />
+        <div style="width:60px;text-align:right;font-size:12px" id="sectionBorderColorVal">#ffffff</div>
+      </div>
+
+      <div class="small">Tip: set <code>--default-tuner-visible: false</code> at the top of the HTML to hide it when publishing.</div>
+    </aside>
+
+    <main id="mainContent" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:12px;z-index:2">
+      <!-- dynamic sections inserted here -->
+      <footer style="width:100%;max-width:var(--max-content-width);padding:18px 12px;color:rgba(255,255,255,0.6);font-size:13px;text-align:center">
+        <div>© <span id="year"></span> — Parkway Music Room</div>
+      </footer>
+    </main>
+  </div>
+
+  <!-- Three.js CDN with fallback -->
+  <script src="https://unpkg.com/three@0.154.0/build/three.min.js"
+          onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.min.js'"></script>
+
+  <!-- Main app script (complete) -->
+  <script>
+/* =========================
+   Utilities & CONFIG
+   ========================= */
+const cssVars = getComputedStyle(document.documentElement);
+const parseNum = (v, fallback) => {
+  const n = parseFloat(String(v).trim());
+  return Number.isFinite(n) ? n : fallback;
+};
+
+const CONFIG = {
+  SHAPE_COUNT: parseInt(cssVars.getPropertyValue('--default-shape-count') || 24, 10),
+  SHAPE_TYPES: (cssVars.getPropertyValue('--default-shape-types') || 'mixed').trim(),
+  ROTATION_SPEED_RANGE: [0.002, 0.012],
+  ORBIT_RADIUS_RANGE: [20, 140],
+  SHAPE_SIZE_RANGE: [8, 36],
+  MAX_PIXEL_RATIO: 1.5,
+  MD_BASE_PATH: './content/',       // <-- changed to relative for GitHub Pages
+  ORBIT_SCROLL_FACTOR: parseNum(cssVars.getPropertyValue('--default-orbit-factor'), 0.0005),
+  LOCATION_RANDOMNESS: parseNum(cssVars.getPropertyValue('--default-location-random'), 1.0),
+  SECTION_EXTRA_VH: parseInt(cssVars.getPropertyValue('--default-section-extra-vh') || 0, 10),
+  SECTION_BLUR_PX: parseInt(cssVars.getPropertyValue('--default-section-blur') || 13, 10),
+  SECTION_ALPHA: parseNum(cssVars.getPropertyValue('--default-section-alpha'), 0.06),
+  SECTION_BORDER_WIDTH: parseInt(cssVars.getPropertyValue('--section-border-width') || cssVars.getPropertyValue('--default-section-border-width') || '1', 10),
+  SECTION_BORDER_COLOR: (cssVars.getPropertyValue('--section-border-color') || cssVars.getPropertyValue('--default-section-border-color') || 'rgba(255,255,255,0.06)').trim()
+};
+
+/* =========================
+   closeMenuThenScrollTo helper
+   Must be defined early so menu link handlers can call it.
+   ========================= */
+function closeMenuThenScrollTo(element, behavior = 'smooth') {
+  if (!element) return;
+  const navVar = getComputedStyle(document.documentElement).getPropertyValue('--nav-height') || '64px';
+  const navHeight = parseInt(String(navVar).trim(), 10) || 64;
+  const extraGap = 24; // matches visual spacing
+  const offset = Math.round(navHeight / 2) + extraGap;
+  const docY = (element.getBoundingClientRect().top + window.pageYOffset) - offset;
+  const targetY = Math.max(0, Math.round(docY));
+
+  if (window._mobileMenuHelpers && document.getElementById('hamburgerBtn').getAttribute('aria-expanded') === 'true') {
+    window._mobileMenuHelpers.setOpen(false);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: targetY, behavior });
+      });
+    });
+  } else {
+    window.scrollTo({ top: targetY, behavior });
+  }
+}
+
+/* =========================
+   NAV: hamburger toggle + menu population
+   ========================= */
+(function NavToggle(){
+  const btn = document.getElementById('hamburgerBtn');
+  const mobileMenu = document.getElementById('mobileMenu');
+  const overlay = document.getElementById('menuOverlay');
+  const svgPaths = document.querySelectorAll('#hamburgerBtn svg path');
+
+  function setOpen(open){
+    btn.setAttribute('aria-expanded', String(!!open));
+    mobileMenu.style.display = open ? 'flex' : 'none';
+    overlay.style.display = open ? 'block' : 'none';
+    overlay.setAttribute('aria-hidden', String(!open));
+    if (open) {
+      svgPaths[0].setAttribute('d','M6 6L18 18');
+      svgPaths[1].setAttribute('d','M12 12L12 12');
+      svgPaths[2].setAttribute('d','M6 18L18 6');
+      document.documentElement.style.overflow = 'hidden';
+      document.body.style.overflow = 'hidden';
+    } else {
+      svgPaths[0].setAttribute('d','M4 7h16');
+      svgPaths[1].setAttribute('d','M4 12h16');
+      svgPaths[2].setAttribute('d','M4 17h16');
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
+    }
+  }
+
+  btn.addEventListener('click', ()=> {
+    const open = btn.getAttribute('aria-expanded') === 'true';
+    setOpen(!open);
+  });
+
+  overlay.addEventListener('click', ()=> setOpen(false));
+  document.addEventListener('keydown', (e)=>{ if (e.key === 'Escape') setOpen(false); }, {passive:true});
+
+  window._mobileMenuHelpers = { setOpen };
+})();
+
+/* =========================
+   Markdown parser (simple)
+   ========================= */
+function parseMarkdown(md){
+  const lines = md.replace(/\r\n/g,'\n').split('\n');
+  let html = '';
+  let inList = false, listType = null;
+  for (let i=0;i<lines.length;i++){
+    let line = lines[i].trim();
+    if (!line){ if (inList) { html += `</${listType}>`; inList=false; listType=null; } continue; }
+    const hmatch = line.match(/^(#{1,6})\s+(.*)/);
+    if (hmatch) { if (inList) { html += `</${listType}>`; inList=false; } const level = hmatch[1].length; html += `<h${level}>${inlineFormat(hmatch[2])}</h${level}>`; continue; }
+    if (line.match(/^(-|\*)\s+/)) {
+      if (!inList) { inList=true; listType='ul'; html += `<ul>`; }
+      html += `<li>${inlineFormat(line.replace(/^(-|\*)\s+/,''))}</li>`; continue;
+    }
+    if (line.match(/^\d+\.\s+/)) {
+      if (!inList) { inList=true; listType='ol'; html += `<ol>`; }
+      html += `<li>${inlineFormat(line.replace(/^\d+\.\s+/,''))}</li>`; continue;
+    }
+    if (inList) { html += `</${listType}>`; inList=false; listType=null; }
+    html += `<p>${inlineFormat(line)}</p>`;
+  }
+  if (inList) html += `</${listType}>`;
+  return html;
+}
+function inlineFormat(text){
+  text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (m,t,u)=>`<a href="${u}" target="_blank" rel="noreferrer noopener">${t}</a>`);
+  text = text.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
+  text = text.replace(/\*([^*]+)\*/g,'<em>$1</em>');
+  return text;
+}
+
+/* =========================
+   Directory listing & section creation
+   ========================= */
+async function listContentFiles(){
+  const base = CONFIG.MD_BASE_PATH || './content/';
+  try {
+    const idxResp = await fetch(base + 'index.json', {cache:'no-store'});
+    if (idxResp.ok){
+      const arr = await idxResp.json();
+      if (Array.isArray(arr)) return arr.filter(f => /\.md$/i.test(f));
+    }
+  } catch(e){}
+  try {
+    const resp = await fetch(base, {cache:'no-store'});
+    if (resp.ok){
+      const text = await resp.text();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(text, 'text/html');
+      const anchors = Array.from(doc.querySelectorAll('a[href]'));
+      const mdFiles = anchors.map(a => a.getAttribute('href')).filter(h => /\.md$/i.test(h));
+      if (mdFiles.length) return mdFiles;
+    }
+  } catch(e){}
+  return [];
+}
+
+function buildMenuFromFileList(files){
+  const mobileMenu = document.getElementById('mobileMenu');
+  const navLinks = document.getElementById('navLinks');
+  mobileMenu.innerHTML = '';
+  navLinks.innerHTML = '';
+  const createLink = (filename)=>{
+    const title = filename.replace(/\.md$/i,'').replace(/[-_]/g,' ').replace(/\b\w/g, s=>s.toUpperCase());
+    const a = document.createElement('a');
+    a.href = 'javascript:void(0)';
+    a.setAttribute('role','menuitem');
+    a.textContent = title;
+    a.dataset.filename = filename;
+    a.tabIndex = 0;
+    a.addEventListener('click', async (e)=>{
+      e.preventDefault();
+      const id = slugifyName(filename);
+      let sec = document.getElementById(id);
+      if (!sec) sec = await createSectionFromFile(filename);
+      if (sec) closeMenuThenScrollTo(sec,'smooth');
+    });
+    a.addEventListener('keydown', async (e)=> {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); a.click(); }
+    });
+    return a;
+  };
+
+  files.forEach(f=>{
+    const a = createLink(f);
+    mobileMenu.appendChild(a);
+    const ad = a.cloneNode(true);
+    ad.addEventListener('click', async (e)=>{ e.preventDefault(); const filename = a.dataset.filename; const id = slugifyName(filename); let sec = document.getElementById(id); if (!sec) sec = await createSectionFromFile(filename); if (sec) closeMenuThenScrollTo(sec,'smooth'); });
+    ad.addEventListener('keydown', (e)=> { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); ad.click(); } });
+    navLinks.appendChild(ad);
+  });
+}
+
+function slugifyName(name){
+  return name.replace(/\.[^/.]+$/,'').trim().toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9\-]/g,'');
+}
+
+async function createSectionFromFile(filename){
+  const base = CONFIG.MD_BASE_PATH || './content/';
+  let decodedFilename = filename;
+  try { if (typeof filename === 'string') decodedFilename = decodeURIComponent(filename); } catch (e) { decodedFilename = filename; }
+  const safeName = String(decodedFilename).split('/').pop();
+  const id = slugifyName(safeName);
+  if (document.getElementById(id)) return document.getElementById(id);
+
+  const section = document.createElement('section');
+  section.className = 'section';
+  section.id = id;
+  section.tabIndex = -1;
+  section.dataset.source = safeName;
+
+  const placeholder = document.createElement('div');
+  placeholder.className = 'md-placeholder';
+  placeholder.textContent = 'Loading...';
+  section.appendChild(placeholder);
+
+  try {
+    const res = await fetch(base + encodeURIComponent(safeName), {cache:'no-store'});
+    if (!res.ok) throw new Error('Not found');
+    let text = await res.text();
+
+    let title = null;
+    const lines = text.split(/\r?\n/);
+    for (const L of lines){
+      const m = L.trim().match(/^#{1,3}\s+(.*)/);
+      if (m){ title = m[1].trim(); break; }
+    }
+    if (!title) title = safeName.replace(/\.md$/i,'').replace(/[-_]/g,' ').replace(/\b\w/g,s=>s.toUpperCase());
+
+    text = text.replace(/^[\s\r\n]*#{1,3}\s+.*(\r?\n|$)/, '');
+
+    section.innerHTML = `<h3>${title}</h3><div class="md-content">${parseMarkdown(text)}</div>`;
+    const footer = document.querySelector('footer');
+    footer.parentNode.insertBefore(section, footer);
+
+    ensureSpacerAfter(section);
+    updateNavForSections();
+    return section;
+  } catch(err){
+    section.innerHTML = `<h3>${safeName.replace(/\.md$/i,'')}</h3><div class="md-placeholder">Could not load: ${safeName} — ${err.message}</div>`;
+    const footer = document.querySelector('footer');
+    footer.parentNode.insertBefore(section, footer);
+    ensureSpacerAfter(section);
+    updateNavForSections();
+    return section;
+  }
+}
+
+/* =========================
+   Spacer helpers
+   ========================= */
+function ensureSpacers(){
+  document.querySelectorAll('.section-spacer').forEach(s=>s.remove());
+  document.querySelectorAll('.section').forEach(sec => ensureSpacerAfter(sec));
+}
+function ensureSpacerAfter(sectionEl){
+  const footer = document.querySelector('footer');
+  if (!sectionEl || sectionEl === footer) return;
+  const next = sectionEl.nextElementSibling;
+  if (next && next.classList && next.classList.contains('section-spacer')){
+    updateSpacerHeight(next);
+    return;
+  }
+  const spacer = document.createElement('div');
+  spacer.className = 'section-spacer';
+  sectionEl.parentNode.insertBefore(spacer, sectionEl.nextSibling);
+  updateSpacerHeight(spacer);
+}
+function updateSpacerHeight(spacerEl){
+  const vhExtra = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--section-extra-vh'),10) || CONFIG.SECTION_EXTRA_VH || 0;
+  let vpHeight = (window.visualViewport && window.visualViewport.height) ? window.visualViewport.height : window.innerHeight;
+  if (!Number.isFinite(vpHeight) || vpHeight <= 0) vpHeight = window.innerHeight;
+  const px = Math.round((vhExtra/100) * vpHeight);
+  spacerEl.style.height = px + 'px';
+}
+function refreshAllSpacers(){
+  document.querySelectorAll('.section-spacer').forEach(updateSpacerHeight);
+}
+
+/* =========================
+   Populate content: list -> build menu -> create sections -> schedule
+   ========================= */
+async function populateContentFromDirectory(){
+  const files = await listContentFiles();
+  if (!files || !files.length){
+    updateNavForSections();
+    createScheduleSection();
+    return;
+  }
+
+  buildMenuFromFileList(files);
+
+  for (const f of files){
+    await createSectionFromFile(f);
+  }
+
+  createScheduleSection();
+  ensureSpacers();
+  updateNavForSections();
+}
+
+/* =========================
+   updateNavForSections: desktop + mobile
+   ========================= */
+function updateNavForSections(){
+  const navLinks = document.getElementById('navLinks');
+  const mobileMenu = document.getElementById('mobileMenu');
+  navLinks.innerHTML = '';
+  mobileMenu.innerHTML = '';
+  const sections = Array.from(document.querySelectorAll('.section'));
+  sections.forEach(s=>{
+    const title = s.querySelector('h3') ? s.querySelector('h3').textContent : (s.dataset.source || s.id);
+    const a = document.createElement('a');
+    a.href = 'javascript:void(0)';
+    a.className = 'nav-link';
+    a.dataset.target = s.id;
+    a.setAttribute('role','link');
+    a.textContent = title;
+    a.tabIndex = 0;
+    a.addEventListener('click', (e)=>{
+      e.preventDefault();
+      closeMenuThenScrollTo(document.getElementById(s.id),'smooth');
+    });
+    a.addEventListener('keydown', (e)=>{ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); a.click(); } });
+    navLinks.appendChild(a);
+
+    const am = a.cloneNode(true);
+    am.addEventListener('click', (e)=>{ 
+      e.preventDefault(); 
+      closeMenuThenScrollTo(document.getElementById(s.id),'smooth');
+    });
+    am.addEventListener('keydown', (e)=>{ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); am.click(); } });
+    mobileMenu.appendChild(am);
+  });
+}
+
+/* =========================
+   Three.js background (self-contained)
+   ========================= */
+(function ThreeModule(){
+  if (typeof THREE === 'undefined') return;
+  const shapeColors = getComputedStyle(document.documentElement).getPropertyValue('--shape-colors') || '#e76f51,#2a9d8f,#e9c46a,#d4a373';
+  const PALETTE = shapeColors.split(',').map(s=>s.trim()).filter(Boolean);
+
+  const container = document.getElementById('three-wrap');
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 2000);
+  camera.position.z = 300;
+
+  const renderer = new THREE.WebGLRenderer({ alpha:true, antialias:true, powerPreference: "high-performance" });
+
+  function resizeRendererToViewport(){
+    const vv = window.visualViewport;
+    const w = vv && vv.width ? Math.round(vv.width) : window.innerWidth;
+    const h = vv && vv.height ? Math.round(vv.height) : window.innerHeight;
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, CONFIG.MAX_PIXEL_RATIO));
+    renderer.setSize(w, h, false);
+    renderer.domElement.style.width = w + 'px';
+    renderer.domElement.style.height = h + 'px';
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, CONFIG.MAX_PIXEL_RATIO));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  container.appendChild(renderer.domElement);
+  renderer.domElement.style.willChange = 'transform';
+
+  const ambient = new THREE.AmbientLight(0xffffff, 0.9); scene.add(ambient);
+  const dir = new THREE.DirectionalLight(0xffffff, 0.6); dir.position.set(0.5,1,0.2).normalize(); scene.add(dir);
+
+  const geoPool = { box: new THREE.BoxGeometry(1,1,1), sphere: new THREE.IcosahedronGeometry(1,1), cone: new THREE.ConeGeometry(1,1,8), icosahedron: new THREE.IcosahedronGeometry(1,0) };
+  let shapes = [];
+
+  function rand(min,max){ return Math.random()*(max-min)+min; }
+  function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+  function createShapes(){
+    clearShapes();
+    const count = Math.max(0, Math.floor(CONFIG.SHAPE_COUNT || 0));
+    let types = Array.isArray(CONFIG.SHAPE_TYPES) && CONFIG.SHAPE_TYPES.length ? CONFIG.SHAPE_TYPES : ['box','sphere','cone','icosahedron'];
+    if (typeof CONFIG.SHAPE_TYPES === 'string') {
+      if (CONFIG.SHAPE_TYPES === 'mixed') types = ['box','sphere','cone','icosahedron'];
+      else types = [CONFIG.SHAPE_TYPES];
+    }
+
+    const gridPositions = [];
+    if (CONFIG.LOCATION_RANDOMNESS < 0.25 && count > 0) {
+      const gridSize = Math.ceil(Math.pow(count, 1/3));
+      const spacing = 120;
+      let idx=0;
+      for (let x=0;x<gridSize && idx<count;x++){
+        for (let y=0;y<gridSize && idx<count;y++){
+          for (let z=0;z<gridSize && idx<count;z++){
+            const gx = (x - (gridSize-1)/2) * spacing;
+            const gy = (y - (gridSize-1)/2) * spacing;
+            const gz = (z - (gridSize-1)/2) * spacing;
+            gridPositions.push(new THREE.Vector3(gx,gy,gz));
+            idx++;
+            if (idx>=count) break;
+          }
+        }
+      }
+    }
+
+    for (let i=0;i<count;i++){
+      let type = pick(types);
+      const geom = (geoPool[type] ? geoPool[type].clone() : geoPool.box.clone());
+      const color = new THREE.Color(pick(PALETTE));
+      const mat = new THREE.MeshStandardMaterial({color:color, metalness:0.25, roughness:0.65});
+      const mesh = new THREE.Mesh(geom, mat);
+      const s = rand(CONFIG.SHAPE_SIZE_RANGE[0], CONFIG.SHAPE_SIZE_RANGE[1]) * 0.8;
+      mesh.scale.setScalar(s * 0.6);
+
+      let pos;
+      if (gridPositions.length && Math.random() > CONFIG.LOCATION_RANDOMNESS) {
+        pos = gridPositions.shift().clone();
+        pos.x += rand(-24,24); pos.y += rand(-24,24); pos.z += rand(-24,24);
+      } else {
+        const theta = Math.random()*Math.PI*2;
+        const phi = Math.acos(2*Math.random()-1);
+        const r = rand(80, 380);
+        pos = new THREE.Vector3(r*Math.sin(phi)*Math.cos(theta), r*Math.sin(phi)*Math.sin(theta), r*Math.cos(phi));
+      }
+      mesh.position.copy(pos);
+      mesh.userData = {
+        rotAxis: new THREE.Vector3(Math.random(), Math.random(), Math.random()).normalize(),
+        rotSpeed: rand(CONFIG.ROTATION_SPEED_RANGE[0], CONFIG.ROTATION_SPEED_RANGE[1]) * (Math.random()>0.5?1:-1),
+        orbitRadius: rand(CONFIG.ORBIT_RADIUS_RANGE[0], CONFIG.ORBIT_RADIUS_RANGE[1]),
+        basePos: mesh.position.clone(),
+        orbitPhase: Math.random() * Math.PI * 2
+      };
+      scene.add(mesh); shapes.push(mesh);
+    }
+  }
+
+  function clearShapes(){
+    if (!shapes || !shapes.length) { shapes = []; return; }
+    shapes.forEach(m=>{
+      if (m.geometry) m.geometry.dispose();
+      if (m.material) { if (Array.isArray(m.material)) m.material.forEach(mat=>mat.dispose()); else m.material.dispose(); }
+      scene.remove(m);
+    });
+    shapes = [];
+  }
+
+  let scrollY = 0, targetScrollY = document.scrollingElement ? document.scrollingElement.scrollTop : (window.scrollY || 0);
+
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('scroll', ()=> {
+      targetScrollY = document.scrollingElement ? document.scrollingElement.scrollTop : (window.scrollY || 0);
+    }, {passive:true});
+    window.visualViewport.addEventListener('resize', ()=> {
+      resizeRendererToViewport();
+      refreshAllSpacers();
+    }, {passive:true});
+  } else {
+    window.addEventListener('scroll', ()=> {
+      targetScrollY = document.scrollingElement ? document.scrollingElement.scrollTop : (window.scrollY || 0);
+    }, {passive:true});
+    window.addEventListener('resize', ()=> {
+      setTimeout(()=>{ resizeRendererToViewport(); refreshAllSpacers(); }, 160);
+    }, {passive:true});
+  }
+
+  (function desktopInteractionFallback(){
+    function clampTarget(y){
+      const maxScroll = (document.scrollingElement ? document.scrollingElement.scrollHeight : document.body.scrollHeight) - window.innerHeight;
+      if (!Number.isFinite(maxScroll) || maxScroll <= 0) return Math.max(0, y);
+      return Math.max(0, Math.min(maxScroll, Math.round(y)));
+    }
+
+    window.addEventListener('wheel', (e)=>{
+      try {
+        const delta = e.deltaY;
+        const maxScroll = (document.scrollingElement ? document.scrollingElement.scrollHeight : document.body.scrollHeight) - window.innerHeight;
+        const canScroll = maxScroll > 1;
+        if (!canScroll) {
+          targetScrollY = clampTarget(targetScrollY + delta);
+        } else {
+          targetScrollY = clampTarget(targetScrollY + delta * 0.6);
+        }
+      } catch (err) { /* defensive */ }
+    }, {passive:true});
+
+    let dragging = false;
+    let lastY = 0;
+    window.addEventListener('pointerdown', (e)=>{ if (e.button !== 0) return; dragging = true; lastY = e.clientY; }, {passive:true});
+    window.addEventListener('pointermove', (e)=>{ if (!dragging) return; const dy = lastY - e.clientY; lastY = e.clientY; targetScrollY = clampTarget(targetScrollY + dy); }, {passive:true});
+    window.addEventListener('pointerup', ()=> { dragging = false; }, {passive:true});
+    window.addEventListener('pointercancel', ()=> { dragging = false; }, {passive:true});
+  })();
+
+ let running = true;
+function animate(){
+  if (!running) return;
+  requestAnimationFrame(animate);
+
+  // If the page is scrollable, make sure targetScrollY follows the real document scrollTop
+  // This ensures programmatic smooth scrolls (window.scrollTo({behavior:'smooth'})) produce
+  // continuous updates even if some browsers don't fire scroll events continuously.
+  try {
+    const scrollingEl = document.scrollingElement || document.documentElement || document.body;
+    const maxScroll = (scrollingEl.scrollHeight || document.body.scrollHeight) - window.innerHeight;
+    if (Number.isFinite(maxScroll) && maxScroll > 1) {
+      targetScrollY = scrollingEl.scrollTop;
+    }
+    // If the page is NOT scrollable, we keep targetScrollY as-is (so wheel/pointer nudges still work)
+  } catch (err) {
+    // defensive - leave targetScrollY unchanged on error
+  }
+
+  // Smoothly ease the internal scrollY toward the target
+  scrollY += (targetScrollY - scrollY) * 0.06;
+
+  for (let i=0;i<shapes.length;i++){
+    const m = shapes[i];
+    const angle = m.userData.rotSpeed;
+    m.rotateOnAxis(m.userData.rotAxis, angle);
+
+    // orbit calculation (unchanged)
+    const orbitAmount = scrollY * CONFIG.ORBIT_SCROLL_FACTOR;
+    const orbitX = Math.cos(orbitAmount + m.userData.orbitPhase) * m.userData.orbitRadius;
+    const orbitY = Math.sin(orbitAmount + m.userData.orbitPhase) * m.userData.orbitRadius;
+    m.position.x = m.userData.basePos.x + orbitX;
+    m.position.y = m.userData.basePos.y + orbitY;
+  }
+
+  renderer.render(scene, camera);
+}
+
+  resizeRendererToViewport();
+  createShapes(); animate();
+
+  window._threeBackground = {
+    updateSettings: function(newSettings){
+      Object.assign(CONFIG, newSettings);
+      if (typeof CONFIG.SHAPE_TYPES === 'string'){
+        if (CONFIG.SHAPE_TYPES === 'mixed') CONFIG.SHAPE_TYPES = ['box','sphere','cone','icosahedron']; else CONFIG.SHAPE_TYPES = [CONFIG.SHAPE_TYPES];
+      }
+      createShapes();
+    },
+    cleanup: function(){
+      running = false;
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', resizeRendererToViewport);
+        window.visualViewport.removeEventListener('scroll', ()=>{});
+      }
+      clearShapes();
+      renderer.dispose();
+      if (container && container.contains(renderer.domElement)) container.removeChild(renderer.domElement);
+      console.log('Three.js background cleaned up.');
+    }
+  };
+})();
+
+/* =========================
+   Tuner wiring & CSS var updates
+   ========================= */
+(function TunerWiring(){
+  const elCount = document.getElementById('shapeCount');
+  const elOrbit = document.getElementById('orbitFactor');
+  const elOrbitVal = document.getElementById('orbitFactorVal');
+  const elLoc = document.getElementById('locationRandom');
+  const elLocVal = document.getElementById('locRandVal');
+  const elMode = document.getElementById('shapeMode');
+
+  const elSectionExtra = document.getElementById('sectionExtra');
+  const elSectionExtraVal = document.getElementById('sectionExtraVal');
+  const elSectionBlur = document.getElementById('sectionBlur');
+  const elSectionBlurVal = document.getElementById('sectionBlurVal');
+  const elSectionAlpha = document.getElementById('sectionAlpha');
+  const elSectionAlphaVal = document.getElementById('sectionAlphaVal');
+
+  const elSectionBorderWidth = document.getElementById('sectionBorderWidth');
+  const elSectionBorderWidthVal = document.getElementById('sectionBorderWidthVal');
+  const elSectionBorderColor = document.getElementById('sectionBorderColor');
+  const elSectionBorderColorVal = document.getElementById('sectionBorderColorVal');
+
+  elCount.value = CONFIG.SHAPE_COUNT;
+  elOrbit.value = CONFIG.ORBIT_SCROLL_FACTOR;
+  elOrbitVal.textContent = Number(CONFIG.ORBIT_SCROLL_FACTOR).toFixed(4);
+  elLoc.value = CONFIG.LOCATION_RANDOMNESS;
+  elLocVal.textContent = Number(CONFIG.LOCATION_RANDOMNESS).toFixed(2);
+
+  if (typeof CONFIG.SHAPE_TYPES === 'string') {
+    elMode.value = CONFIG.SHAPE_TYPES === 'mixed' ? 'mixed' : CONFIG.SHAPE_TYPES;
+  } else {
+    elMode.value = 'mixed';
+  }
+
+  elSectionExtra.value = CONFIG.SECTION_EXTRA_VH;
+  elSectionExtraVal.textContent = String(CONFIG.SECTION_EXTRA_VH);
+  elSectionBlur.value = CONFIG.SECTION_BLUR_PX;
+  elSectionBlurVal.textContent = String(CONFIG.SECTION_BLUR_PX);
+  elSectionAlpha.value = CONFIG.SECTION_ALPHA;
+  elSectionAlphaVal.textContent = String(CONFIG.SECTION_ALPHA);
+
+  elSectionBorderWidth.value = CONFIG.SECTION_BORDER_WIDTH;
+  elSectionBorderWidthVal.textContent = CONFIG.SECTION_BORDER_WIDTH + 'px';
+  // convert possible rgb/rgba to hex for color input; fallback to white
+  elSectionBorderColor.value = (function toHex(rgb){
+    if (!rgb) return '#ffffff';
+    if (rgb.trim().startsWith('#')) return rgb.trim();
+    const m = rgb.match(/rgba?\(([^)]+)\)/);
+    if (!m) return '#ffffff';
+    const parts = m[1].split(',').map(p=>parseInt(p.trim(),10));
+    const [r,g,b] = parts;
+    return '#'+[(r||0),(g||0),(b||0)].map(n=>n.toString(16).padStart(2,'0')).join('');
+  })(CONFIG.SECTION_BORDER_COLOR);
+  elSectionBorderColorVal.textContent = elSectionBorderColor.value;
+
+  document.getElementById('topShapeCount').textContent = String(CONFIG.SHAPE_COUNT);
+  document.getElementById('topBlurVal').textContent = String(CONFIG.SECTION_BLUR_PX);
+
+  function apply(){
+    const count = parseInt(elCount.value,10) || 0;
+    const orbit = parseFloat(elOrbit.value) || 0.0005;
+    const loc = parseFloat(elLoc.value);
+    const mode = elMode.value;
+    const types = (mode === 'mixed') ? ['box','sphere','cone','icosahedron'] : [mode];
+
+    if (window._threeBackground && typeof window._threeBackground.updateSettings === 'function'){
+      window._threeBackground.updateSettings({
+        SHAPE_COUNT: count,
+        ORBIT_SCROLL_FACTOR: orbit,
+        LOCATION_RANDOMNESS: loc,
+        SHAPE_TYPES: types
+      });
+    }
+    elOrbitVal.textContent = orbit.toFixed(4);
+    elLocVal.textContent = loc.toFixed(2);
+
+    const extra = parseInt(elSectionExtra.value,10) || 0;
+    const blurPx = parseInt(elSectionBlur.value,10) || 0;
+    const alpha = parseFloat(elSectionAlpha.value) || 0.06;
+
+    const borderWidth = parseInt(elSectionBorderWidth.value,10) || 0;
+    const borderColor = elSectionBorderColor.value;
+
+    // These remain the canonical section values (variables.css can override them too)
+    document.documentElement.style.setProperty('--section-extra-vh', String(extra));
+    document.documentElement.style.setProperty('--section-blur', blurPx + 'px');
+    document.documentElement.style.setProperty('--section-alpha', String(alpha));
+    document.documentElement.style.setProperty('--section-border-width', borderWidth + 'px');
+    document.documentElement.style.setProperty('--section-border-color', borderColor);
+
+    // NOTE: we intentionally DO NOT force-set --modal-border-color/width here so that:
+    // - variables.css (and any manual modal overrides) remain able to control modal borders
+    // - tuner only updates the section variables (preserving the original behavior)
+    //
+    // If you want tuner to also update modal-specific vars, reintroduce the mirror lines below:
+    // document.documentElement.style.setProperty('--modal-border-width', borderWidth + 'px');
+    // document.documentElement.style.setProperty('--modal-border-color', borderColor);
+
+    document.getElementById('topShapeCount').textContent = String(count);
+    document.getElementById('topBlurVal').textContent = String(blurPx);
+
+    elSectionExtraVal.textContent = String(extra);
+    elSectionBlurVal.textContent = String(blurPx);
+    elSectionAlphaVal.textContent = String(alpha);
+    elSectionBorderWidthVal.textContent = borderWidth + 'px';
+    elSectionBorderColorVal.textContent = borderColor;
+
+    window.requestAnimationFrame(()=>{ refreshAllSpacers(); });
+  }
+
+  let tId = null;
+  function scheduleApply(){ if (tId) clearTimeout(tId); tId = setTimeout(()=>{ apply(); tId=null; }, 100); }
+
+  [elCount, elOrbit, elLoc, elMode, elSectionExtra, elSectionBlur, elSectionAlpha, elSectionBorderWidth, elSectionBorderColor].forEach(el=>{
+    el.addEventListener('input', scheduleApply);
+    el.addEventListener('change', scheduleApply);
+  });
+
+  document.addEventListener('DOMContentLoaded', apply);
+
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', ()=> { refreshAllSpacers(); }, {passive:true});
+  } else {
+    window.addEventListener('resize', ()=> { setTimeout(refreshAllSpacers, 120); }, {passive:true});
+  }
+
+  // show/hide tuner
+  const tunerEl = document.getElementById('tuner');
+  const tunerToggleBtn = document.getElementById('tunerToggle');
+  const tunerVisibleRaw = getComputedStyle(document.documentElement).getPropertyValue('--default-tuner-visible').trim();
+  const tunerVisibleDefault = !(tunerVisibleRaw === 'false' || tunerVisibleRaw === '0' || tunerVisibleRaw === '');
+  tunerEl.setAttribute('data-visible', tunerVisibleDefault ? 'true' : 'false');
+  tunerToggleBtn.setAttribute('data-visible', tunerVisibleDefault ? 'true' : 'false');
+  tunerToggleBtn.setAttribute('aria-pressed', String(tunerVisibleDefault));
+  function applyTunerVisibilityFromData(){
+    const v = tunerEl.getAttribute('data-visible');
+    const visible = !(v === 'false' || v === '0' || v === '');
+    if (visible) { tunerEl.classList.add('show'); tunerEl.style.display = 'block'; }
+    else { tunerEl.classList.remove('show'); tunerEl.style.display = 'none'; }
+    tunerToggleBtn.setAttribute('aria-pressed', String(visible));
+    tunerToggleBtn.setAttribute('data-visible', String(visible));
+  }
+  applyTunerVisibilityFromData();
+  tunerToggleBtn.addEventListener('click', ()=>{
+    const v = tunerEl.getAttribute('data-visible');
+    const newV = (v === 'false' || v === '0' || v === '') ? 'true' : 'false';
+    tunerEl.setAttribute('data-visible', newV);
+    applyTunerVisibilityFromData();
+  });
+})();
+
+/* =========================
+   Schedule helpers & UI (modal + toast)
+   ========================= */
+
+/* ---- sessionStorage helpers so requested slots persist for the session ---- */
+const REQUESTS_KEY = '__parkway_requested_slots';
+function getRequestedSlots() {
+  try {
+    const raw = sessionStorage.getItem(REQUESTS_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch (e) {
+    return {};
+  }
+}
+function saveRequestedSlot(day, time, data) {
+  try {
+    const key = `${day}|${time}`;
+    const s = getRequestedSlots();
+    s[key] = Object.assign({ ts: Date.now() }, data || {});
+    sessionStorage.setItem(REQUESTS_KEY, JSON.stringify(s));
+  } catch (e) {
+    console.error('Failed saving requested slot', e);
+  }
+}
+function getRequestedSlot(day, time) {
+  const key = `${day}|${time}`;
+  const s = getRequestedSlots();
+  return s[key] || null;
+}
+
+function formatScheduleHour(hour) {
+  if (hour === 0 || hour === 24) return '12';
+  if (hour === 12) return '12';
+  return hour > 12 ? String(hour - 12) : String(hour);
+}
+
+/* renderScheduleTimeBlocksInto now checks sessionStorage and marks requested slots */
+function renderScheduleTimeBlocksInto(container, day = 'tuesday') {
+  if (!container) return;
+  container.innerHTML = '';
+  const requestedSlots = getRequestedSlots();
+
+  for (let hour = 9; hour <= 19; hour++) {
+    const endHour = hour + 1;
+    const timeLabel = `${formatScheduleHour(hour)}-${formatScheduleHour(endHour)}`;
+    let status = 'available';
+    let requester = '';
+    if (hour === 13 || hour === 14) { status = 'filled'; requester = '_____ _____ _____ _____'; }
+
+    // check sessionStorage for requested entry
+    const key = `${day}|${timeLabel}`;
+    if (requestedSlots && requestedSlots[key]) {
+      status = 'requested';
+      requester = requestedSlots[key].name || '';
+    }
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `time-block modal-time-block ${status}`;
+    btn.dataset.time = `${timeLabel}`;
+    btn.dataset.status = status;
+    btn.dataset.requester = requester;
+    btn.dataset.day = day;
+    btn.setAttribute('role', 'button');
+    btn.tabIndex = 0;
+    if (status === 'filled' || status === 'requested') btn.setAttribute('aria-disabled', 'true'); else btn.setAttribute('aria-disabled', 'false');
+    const statusText = status === 'available' ? 'Available' : (status === 'filled' ? 'Filled' : 'Requested by ' + (requester || 'someone'));
+    btn.innerHTML = `<div class="time-block-time">${timeLabel}</div><div class="time-block-status">${statusText}${requester ? ' ' + requester : ''}</div>`;
+    container.appendChild(btn);
+  }
+}
+
+function generateScheduleTimeBlocks() {
+  const blocksContainer = document.querySelector('.schedule-blocks');
+  if (!blocksContainer) return;
+  renderScheduleTimeBlocksInto(blocksContainer, blocksContainer.closest('.schedule-content')?.dataset.day || 'tuesday');
+}
+
+/* Open schedule window for a day (modal) — includes the subtitle line */
+function openScheduleWindowForDay(day = 'tuesday') {
+  if (document.getElementById('__schedule_window_overlay')) return;
+
+  const scrollY = window.scrollY || document.documentElement.scrollTop || 0;
+  const prevBody = { position: document.body.style.position || '', top: document.body.style.top || '', left: document.body.style.left || '', right: document.body.style.right || '', width: document.body.style.width || '' };
+  const prevHtmlOverflow = document.documentElement.style.overflow || '';
+  const prevBodyOverflow = document.body.style.overflow || '';
+
+  document.body.style.position = 'fixed';
+  document.body.style.top = `-${scrollY}px`;
+  document.body.style.left = '0';
+  document.body.style.right = '0';
+  document.body.style.width = '100%';
+  document.documentElement.style.overflow = 'hidden';
+  document.body.style.overflow = 'hidden';
+
+  const overlay = document.createElement('div');
+  overlay.id = '__schedule_window_overlay';
+  overlay.className = 'schedule-window-overlay';
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-label', `Schedule — ${day}`);
+
+  const box = document.createElement('div');
+  box.className = 'schedule-window';
+  box.innerHTML = `
+    <div class="schedule-window-header">
+      <div style="font-weight:600;color:var(--heading-primary)">Schedule — ${day.charAt(0).toUpperCase() + day.slice(1)}</div>
+      <div><button class="schedule-window-close" aria-label="Close schedule window">✕</button></div>
+    </div>
+    <div class="modal-subtitle">Click to request a time slot:</div>
+    <div class="schedule-window-body">
+      <div class="schedule-content-modal" data-day="${day}">
+        <div class="modal-schedule-blocks" aria-live="polite" aria-label="Available time slots in modal"></div>
+        <div class="success-message" style="display:none;">Your request has been submitted successfully!</div>
+      </div>
+    </div>
+  `;
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+
+  const modalBlocks = box.querySelector('.modal-schedule-blocks');
+  renderScheduleTimeBlocksInto(modalBlocks, day);
+
+  setTimeout(()=>{
+    const first = modalBlocks.querySelector('.time-block:not([aria-disabled="true"])');
+    if (first) first.focus();
+  }, 60);
+
+  function closeWindow(){
+    document.removeEventListener('keydown', onKey);
+    box.removeEventListener('click', modalClickHandler);
+    if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+
+    document.documentElement.style.overflow = prevHtmlOverflow || '';
+    document.body.style.overflow = prevBodyOverflow || '';
+    document.body.style.position = prevBody.position;
+    document.body.style.top = prevBody.top;
+    document.body.style.left = prevBody.left;
+    document.body.style.right = prevBody.right;
+    document.body.style.width = prevBody.width;
+
+    window.scrollTo(0, scrollY);
+  }
+  function onKey(e){ if (e.key === 'Escape') closeWindow(); }
+
+  const closeBtn = box.querySelector('.schedule-window-close');
+  if (closeBtn) {
+    closeBtn.addEventListener('pointerdown', (ev)=>{ ev.stopPropagation(); }, {passive:true});
+    closeBtn.addEventListener('click', (ev)=>{ ev.stopPropagation(); closeWindow(); });
+  }
+
+  overlay.addEventListener('click', (e)=>{ if (e.target === overlay) closeWindow(); });
+
+  function modalClickHandler(e) {
+    const tb = e.target.closest && e.target.closest('.modal-time-block');
+    if (!tb) return;
+    const status = tb.dataset.status;
+    if (status === 'available') {
+      showScheduleToastMenu(tb);
+    }
+  }
+  box.addEventListener('click', modalClickHandler);
+
+  document.addEventListener('keydown', onKey);
+  window._closeScheduleWindow = closeWindow;
+}
+
+/* Open iframe schedule modal (anchors to schedule.html) */
+function openScheduleModal(href){
+  if (document.getElementById('__schedule_modal_overlay')) return;
+
+  const scrollY = window.scrollY || document.documentElement.scrollTop || 0;
+  const prevBody = { position: document.body.style.position || '', top: document.body.style.top || '', left: document.body.style.left || '', right: document.body.style.right || '', width: document.body.style.width || '' };
+  const prevHtmlOverflow = document.documentElement.style.overflow || '';
+  const prevBodyOverflow = document.body.style.overflow || '';
+
+  document.body.style.position = 'fixed';
+  document.body.style.top = `-${scrollY}px`;
+  document.body.style.left = '0';
+  document.body.style.right = '0';
+  document.body.style.width = '100%';
+  document.documentElement.style.overflow = 'hidden';
+  document.body.style.overflow = 'hidden';
+
+  const overlay = document.createElement('div');
+  overlay.className = 'schedule-modal-overlay';
+  overlay.id = '__schedule_modal_overlay';
+
+  const box = document.createElement('div');
+  box.className = 'schedule-modal';
+  box.innerHTML = `
+    <div class="modal-header">
+      <div style="font-weight:600;color:var(--heading-primary)">Schedule</div>
+      <div>
+        <button class="close-btn" aria-label="Close schedule">✕</button>
+      </div>
+    </div>
+    <iframe src="${href}" title="Schedule" style="width:100%;height:70vh;border:0;border-radius:8px;"></iframe>
+  `;
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+
+  function closeScheduleModal(){
+    const el = document.getElementById('__schedule_modal_overlay');
+    if (el) el.remove();
+    document.documentElement.style.overflow = prevHtmlOverflow || '';
+    document.body.style.overflow = prevBodyOverflow || '';
+    document.body.style.position = prevBody.position;
+    document.body.style.top = prevBody.top;
+    document.body.style.left = prevBody.left;
+    document.body.style.right = prevBody.right;
+    document.body.style.width = prevBody.width;
+    window.scrollTo(0, scrollY);
+    document.removeEventListener('keydown', __scheduleKeyClose);
+  }
+
+  overlay.addEventListener('click', (e)=>{ if (e.target === overlay) closeScheduleModal(); });
+  box.querySelector('.close-btn').addEventListener('click', closeScheduleModal);
+  function __scheduleKeyClose(e){ if (e.key === 'Escape') closeScheduleModal(); }
+  document.addEventListener('keydown', __scheduleKeyClose);
+
+  window.closeScheduleModal = closeScheduleModal;
+}
+
+/* Delegated click interception for schedule.html links */
+document.addEventListener('click', function(e){
+  const a = e.target.closest && e.target.closest('a');
+  if (!a) return;
+  const href = a.getAttribute('href') || '';
+  if (/\/?schedule\.html(\?.*)?$/.test(href)) {
+    e.preventDefault();
+    const absolute = new URL(href, location.origin + location.pathname).href;
+    openScheduleModal(absolute);
+    return;
+  }
+}, {passive:false});
+
+/* showScheduleToastMenu + sendScheduleRequest
+   - includes Notes field
+   - persists requested slot in sessionStorage
+   - shows tiny transient confirmation toast
+*/
+function showScheduleToastMenu(timeBlock) {
+  if (document.getElementById('__schedule_toast_overlay')) return;
+
+  const scheduleOverlay = document.getElementById('__schedule_window_overlay') || document.getElementById('__schedule_modal_overlay');
+  if (scheduleOverlay) {
+    scheduleOverlay.dataset._prevZ = scheduleOverlay.style.zIndex || '';
+    scheduleOverlay.dataset._prevAria = scheduleOverlay.getAttribute('aria-hidden') || '';
+    scheduleOverlay.style.zIndex = '10000';
+    scheduleOverlay.setAttribute('aria-hidden', 'true');
+    scheduleOverlay.classList.add('modal-blocked');
+  }
+
+  const overlay = document.createElement('div');
+  overlay.id = '__schedule_toast_overlay';
+  overlay.className = 'toast-overlay';
+  overlay.style.zIndex = '12000';
+
+  const toast = document.createElement('div');
+  toast.className = 'toast-menu';
+  const day = timeBlock.closest('.schedule-content')?.dataset.day || timeBlock.dataset.day || document.querySelector('.schedule-content')?.dataset.day || 'tuesday';
+  toast.innerHTML = `
+    <h4>Request Time Slot</h4>
+    <p>Requesting: <strong>${timeBlock.dataset.time}</strong> (${day})</p>
+    <input type="text" placeholder="Your Name" id="requester-name" aria-label="Your name">
+    <textarea id="requester-notes" placeholder="Notes (optional)" rows="3" aria-label="Notes"></textarea>
+    <div class="toast-buttons">
+      <button class="toast-btn cancel" type="button">Cancel</button>
+      <button class="toast-btn confirm" type="button">Confirm Request</button>
+    </div>
+  `;
+
+  overlay.appendChild(toast);
+  document.body.appendChild(overlay);
+
+  const nameInput = toast.querySelector('#requester-name');
+  const notesInput = toast.querySelector('#requester-notes');
+  nameInput.focus();
+
+  toast.querySelector('.toast-btn.cancel').addEventListener('click', function() {
+    if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    if (scheduleOverlay) {
+      scheduleOverlay.setAttribute('aria-hidden', scheduleOverlay.dataset._prevAria || 'false');
+      scheduleOverlay.style.zIndex = scheduleOverlay.dataset._prevZ || '';
+      scheduleOverlay.classList.remove('modal-blocked');
+      delete scheduleOverlay.dataset._prevZ;
+      delete scheduleOverlay.dataset._prevAria;
+    }
+  });
+
+  toast.querySelector('.toast-btn.confirm').addEventListener('click', async function() {
+    const name = nameInput.value.trim();
+    const notes = notesInput.value.trim();
+    if (!name) { nameInput.focus(); nameInput.placeholder = 'Please enter your name'; return; }
+
+    const payload = { name, notes, time: timeBlock.dataset.time, day: day, source: window.location.href };
+
+    try {
+      const res = await sendScheduleRequest(payload);
+      if (res && res.status && res.status >= 400) {
+        console.warn('sendScheduleRequest returned an error response', res);
+      }
+    } catch (err) {
+      console.error('Failed to send request', err);
+    }
+
+    // persist for this session
+    saveRequestedSlot(day, timeBlock.dataset.time, { name: payload.name, notes: payload.notes });
+
+    // update UI to requested
+    timeBlock.dataset.status = 'requested';
+    timeBlock.dataset.requester = payload.name;
+    timeBlock.className = 'time-block modal-time-block requested';
+    timeBlock.setAttribute('aria-disabled', 'true');
+    const statusEl = timeBlock.querySelector('.time-block-status');
+    if (statusEl) statusEl.textContent = 'Requested by ' + payload.name;
+
+    // show inline success element (if inside modal)
+    const successMsg = document.querySelector('.success-message');
+    if (successMsg) {
+      successMsg.style.display = 'block';
+      setTimeout(() => { successMsg.style.display = 'none'; }, 3000);
+    }
+
+    // transient confirmation toast
+    showSubmitToast("Your request has been submitted. I'll be in touch.");
+
+    // close the request toast overlay
+    if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    if (scheduleOverlay) {
+      scheduleOverlay.setAttribute('aria-hidden', scheduleOverlay.dataset._prevAria || 'false');
+      scheduleOverlay.style.zIndex = scheduleOverlay.dataset._prevZ || '';
+      scheduleOverlay.classList.remove('modal-blocked');
+      delete scheduleOverlay.dataset._prevZ;
+      delete scheduleOverlay.dataset._prevAria;
+    }
+  });
+
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay && overlay.parentNode) {
+      overlay.parentNode.removeChild(overlay);
+      if (scheduleOverlay) {
+        scheduleOverlay.setAttribute('aria-hidden', scheduleOverlay.dataset._prevAria || 'false');
+        scheduleOverlay.style.zIndex = scheduleOverlay.dataset._prevZ || '';
+        scheduleOverlay.classList.remove('modal-blocked');
+        delete scheduleOverlay.dataset._prevZ;
+        delete scheduleOverlay.dataset._prevAria;
+      }
+    }
+  });
+}
+
+/* small transient submit toast helper */
+function showSubmitToast(text, duration = 3200) {
+  let el = document.getElementById('__submit_toast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = '__submit_toast';
+    el.className = 'submit-toast';
+    document.body.appendChild(el);
+  }
+  el.textContent = text;
+  requestAnimationFrame(()=> el.classList.add('show'));
+  clearTimeout(el._hideTimer);
+  el._hideTimer = setTimeout(()=> {
+    el.classList.remove('show');
+    el._hideTimer = null;
+  }, duration);
+}
+
+/* sendScheduleRequest: includes notes and maps to EmailJS template vars */
+async function sendScheduleRequest(payload) {
+  // payload: { name, notes, time, day, source }
+  // Replace these with values from your EmailJS dashboard:
+  const SERVICE_ID  = 'service_j64vgde';   // e.g. 'service_xxx'
+  const TEMPLATE_ID = 'template_w873ycw';  // e.g. 'template_xxx'
+
+  const templateParams = {
+    requester_name: payload.name || '',
+    requester_notes: payload.notes || '',
+    slot_time:      payload.time || '',
+    slot_day:       payload.day || '',
+    page_url:       payload.source || window.location.href
+  };
+
+  try {
+    if (!window.emailjs || typeof emailjs.send !== 'function') {
+      console.error('EmailJS SDK not loaded (emailjs.send missing).');
+      return new Response(JSON.stringify({ error: 'EmailJS SDK missing' }), { status: 500 });
+    }
+
+    const res = await emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams);
+    console.log('EmailJS send success', res);
+    return new Response(null, { status: 200, statusText: 'OK' });
+  } catch (err) {
+    console.error('EmailJS send failed', err);
+    return new Response(JSON.stringify({ error: String(err) }), { status: 500 });
+  }
+}
+
+/* =========================
+   createScheduleSection: inserts in-document schedule UI and wires listeners
+   ========================= */
+function createScheduleSection() {
+  if (document.getElementById('schedule-section')) return;
+
+  const scheduleSection = document.createElement('section');
+  scheduleSection.id = 'schedule-section';
+  scheduleSection.className = 'section';
+
+  scheduleSection.innerHTML = `
+   <h3>Schedule</h3>
+    <p class="schedule-subtitle">Currently, Tuesdays are lesson days. Check here for available times:</p>
+
+<div class="schedule-day-buttons">
+  <button class="schedule-day-btn" data-day="tuesday">Tuesdays</button>
+  <!-- Add more day buttons as needed -->
+</div>
+
+<div class="schedule-content" data-day="tuesday" style="display:none;">
+  <div class="schedule-blocks" aria-live="polite" aria-label="Available time slots">
+    <!-- Time blocks will be generated when a day is clicked -->
+  </div>
+  <div class="success-message" style="display:none;">Your request has been submitted successfully!</div>
+</div>
+
+  `;
+
+  const footer = document.querySelector('footer');
+  footer.parentNode.insertBefore(scheduleSection, footer);
+
+  // Generate inline time blocks (backwards compatibility)
+  generateScheduleTimeBlocks();
+
+  // Add spacer and fade-in
+  ensureSpacerAfter(scheduleSection);
+  scheduleSection.classList.add('fade-in');
+
+  // Setup event listeners (delegated)
+  setupScheduleEventListeners();
+}
+
+/* setupScheduleEventListeners: delegated handlers for day buttons & time-blocks */
+function setupScheduleEventListeners() {
+  console.log('[setupScheduleEventListeners] init');
+
+  const inlineContent = document.querySelector('.schedule-content');
+  if (inlineContent) inlineContent.style.display = 'none';
+
+  if (document._scheduleDayDelegateAdded) {
+    console.log('[setupScheduleEventListeners] delegate already added');
+    return;
+  }
+
+  document.addEventListener('click', function (e) {
+    const btn = e.target.closest && e.target.closest('.schedule-day-btn');
+    if (!btn) return;
+    e.preventDefault();
+    console.log('[setupScheduleEventListeners] day button clicked ->', btn.dataset.day || 'tuesday', btn);
+
+    const dayButtons = Array.from(document.querySelectorAll('.schedule-day-btn') || []);
+    dayButtons.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    try {
+      openScheduleWindowForDay(btn.dataset.day || 'tuesday');
+    } catch (err) {
+      console.error('[setupScheduleEventListeners] openScheduleWindowForDay failed', err);
+    }
+  }, { passive: false });
+
+  if (!document._scheduleClickHandlerAdded) {
+    document.addEventListener('click', function (e) {
+      const timeBlock = e.target.closest && e.target.closest('.time-block');
+      if (!timeBlock) return;
+      const status = timeBlock.dataset.status;
+      if (status === 'available') {
+        console.log('[setupScheduleEventListeners] time-block clicked ->', timeBlock.dataset.time);
+        showScheduleToastMenu(timeBlock);
+      }
+    }, { passive: false });
+    document._scheduleClickHandlerAdded = true;
+  }
+
+  document._scheduleDayDelegateAdded = true;
+  console.log('[setupScheduleEventListeners] delegate attached');
+}
+
+/* =========================
+   Small helpers / DOM ready
+   ========================= */
+document.addEventListener('DOMContentLoaded', async ()=>{
+  await populateContentFromDirectory();
+  setTimeout(updateNavForSections, 200);
+  setTimeout(refreshAllSpacers, 250);
+});
+
+(function Small(){ document.getElementById('year').textContent = new Date().getFullYear(); })();
+
+  </script>
+</body>
+</html>
