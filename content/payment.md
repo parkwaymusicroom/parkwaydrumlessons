@@ -1,10 +1,11 @@
 ## Payment Options
 
 
-- **Credit / Debit/ ApplePay:**    [PAY HERE](https://square.link/u/mP5e3zTE?src=sheet)
+- **Credit / Debit/ ApplePay:**    [Pay Here](https://square.link/u/mP5e3zTE?src=sheet)
 
 
-- **CashApp:**    [PAY HERE](https://cash.app/$mark417)
+- **CashApp:**    [Pay Here](https://cash.app/$mark417)
 
   
 - **Cash:** In person  
+
