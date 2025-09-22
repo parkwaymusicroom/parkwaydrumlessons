@@ -359,7 +359,7 @@ function closeMenuThenScrollTo(element, behavior = 'smooth') {
   if (!element) return;
   const navVar = getComputedStyle(document.documentElement).getPropertyValue('--nav-height') || '64px';
   const navHeight = parseInt(String(navVar).trim(), 10) || 64;
-  const extraGap = 48; // matches visual spacing
+  const extraGap = 55; // matches visual spacing
   const offset = Math.round(navHeight / 2) + extraGap;
   const docY = (element.getBoundingClientRect().top + window.pageYOffset) - offset;
   const targetY = Math.max(0, Math.round(docY));
@@ -1530,6 +1530,7 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   </script>
 </body>
 </html>
+
 
 
 
