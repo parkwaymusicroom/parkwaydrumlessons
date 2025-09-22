@@ -7,7 +7,7 @@
 
 ## Drumsticks
 
-Any pair of drumsticks will work, but some feel more natural and comfortable than others.  
+There are hundreds of drumstick styles, shapes, and sizes to choose from, but some feel more natural and comfortable than others.  
 Here are a few recommended options, listed from thin to thick:
 
 - [Vic Firth – Peter Erskine, round tip](https://a.co/d/hMg2MGX) – thin (.53 in)  
