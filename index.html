@@ -1093,8 +1093,8 @@ function renderScheduleTimeBlocksInto(container, day = 'tuesday') {
     btn.setAttribute('role', 'button');
     btn.tabIndex = 0;
     if (status === 'filled' || status === 'requested') btn.setAttribute('aria-disabled', 'true'); else btn.setAttribute('aria-disabled', 'false');
-    const statusText = status === 'available' ? 'Available' : (status === 'filled' ? 'Filled' : 'Requested by ' + (requester || 'someone'));
-    btn.innerHTML = `<div class="time-block-time">${timeLabel}</div><div class="time-block-status">${statusText}${requester ? ' ' + requester : ''}</div>`;
+    const statusText = status === 'available' ? 'Available' : (status === 'filled' ? 'Filled' : 'Requested');
+    btn.innerHTML = `<div class="time-block-time">${timeLabel}</div><div class="time-block-status">${statusText}</div>`;
     container.appendChild(btn);
   }
 }
@@ -1343,7 +1343,7 @@ function showScheduleToastMenu(timeBlock) {
     timeBlock.className = 'time-block modal-time-block requested';
     timeBlock.setAttribute('aria-disabled', 'true');
     const statusEl = timeBlock.querySelector('.time-block-status');
-    if (statusEl) statusEl.textContent = 'Requested by ' + payload.name;
+    if (statusEl) statusEl.textContent = 'Requested';
 
     // show inline success element (if inside modal)
     const successMsg = document.querySelector('.success-message');
@@ -1530,3 +1530,4 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   </script>
 </body>
 </html>
+
