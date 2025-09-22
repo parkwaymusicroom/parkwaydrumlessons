@@ -5,7 +5,7 @@
 
 ---
 
-## Drumsticks
+### Drumsticks
 
 There are hundreds of drumstick styles, shapes, and sizes to choose from, but some feel more natural and comfortable than others.  
 Here are a few recommended options:
