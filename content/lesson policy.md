@@ -26,7 +26,9 @@
 - **Teacher absence:** Lesson will be made up or refunded.  
 
 
-#####(If you or your child would like to take lessons but the cost is a barrier, email me here: parkwaymusicroom@gmail.com)
+
+(If you or your child would like to take lessons but the cost is a barrier, email me here: parkwaymusicroom@gmail.com)
+
 
 
 
