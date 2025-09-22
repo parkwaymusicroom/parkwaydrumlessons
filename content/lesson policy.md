@@ -29,9 +29,10 @@
 
 
 
-(If you or your child would like to 
-take lessons but the cost is a barrier, 
-email me at: [parkwaymusicroom@gmail.com](parkwaymusicroom@gmail.com))
+If you or your child would like to 
+take lessons but the cost is a barrier, email me at:
+parkwaymusicroom@gmail.com
+
 
 
 
