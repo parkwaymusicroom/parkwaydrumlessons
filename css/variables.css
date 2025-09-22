@@ -27,7 +27,7 @@
      --section-* properties further below (edit those to change the live site).
      ------------------------- */
   --default-shape-count:           60;
-  --default-shape-types:           box;        /* 'mixed' | 'box' | 'sphere' | ... */
+  --default-shape-types:           mixed;        /* 'mixed' | 'box' | 'sphere' | ... */
   --default-orbit-factor:          0.0035;
   --default-location-random:       1;
   --default-section-extra-vh:      35;          /* integer (vh%) */
@@ -72,4 +72,5 @@
   /* Tuner panel behavior */
   --tuner-blur:            13px;
 }
+
 
