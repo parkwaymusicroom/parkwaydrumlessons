@@ -1,3 +1,13 @@
 /* Small animation */
 .fade-in{animation:fadeIn .48s ease both}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* Staggered animations for multiple sections */
+.section.fade-in:nth-child(1) { animation-delay: 0.1s; }
+.section.fade-in:nth-child(2) { animation-delay: 0.2s; }
+.section.fade-in:nth-child(3) { animation-delay: 0.3s; }
+.section.fade-in:nth-child(4) { animation-delay: 0.4s; }
+.section.fade-in:nth-child(5) { animation-delay: 0.5s; }
+
+/* Footer animation with slight delay */
+footer.fade-in { animation-delay: 0.6s; }

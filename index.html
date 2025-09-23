@@ -1,4 +1,4 @@
-<!doctype html>
+<!doctype html> 
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -313,7 +313,7 @@
 
     <main id="mainContent" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:12px;z-index:2">
       <!-- dynamic sections inserted here -->
-      <footer style="width:100%;max-width:var(--max-content-width);padding:18px 12px;color:rgba(255,255,255,0.6);font-size:13px;text-align:center">
+      <footer class="fade-in" style="width:100%;max-width:var(--max-content-width);padding:18px 12px;color:rgba(255,255,255,0.6);font-size:13px;text-align:center">
         <div>© <span id="year"></span> — Parkway Music Room</div>
       </footer>
     </main>
@@ -524,7 +524,7 @@ async function createSectionFromFile(filename){
   if (document.getElementById(id)) return document.getElementById(id);
 
   const section = document.createElement('section');
-  section.className = 'section';
+  section.className = 'section fade-in';
   section.id = id;
   section.tabIndex = -1;
   section.dataset.source = safeName;
@@ -669,6 +669,13 @@ function updateNavForSections(){
 
   const renderer = new THREE.WebGLRenderer({ alpha:true, antialias:true, powerPreference: "high-performance" });
 
+  // Add clock for animation timing
+  const clock = new THREE.Clock();
+
+  // Easing function
+  function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
+  function randRange(min, max){ return Math.random()*(max-min)+min; }
+
   function resizeRendererToViewport(){
     const vv = window.visualViewport;
     const w = vv && vv.width ? Math.round(vv.width) : window.innerWidth;
@@ -729,10 +736,19 @@ function updateNavForSections(){
       const geom = (geoPool[type] ? geoPool[type].clone() : geoPool.box.clone());
       const color = new THREE.Color(pick(PALETTE));
       const mat = new THREE.MeshStandardMaterial({color:color, metalness:0.25, roughness:0.65});
-      const mesh = new THREE.Mesh(geom, mat);
-      const s = rand(CONFIG.SHAPE_SIZE_RANGE[0], CONFIG.SHAPE_SIZE_RANGE[1]) * 0.8;
-      mesh.scale.setScalar(s * 0.6);
+      // enable transparency so we can fade in
+      mat.transparent = true;
+      mat.opacity = 0;
 
+      const mesh = new THREE.Mesh(geom, mat);
+
+      // compute final scale
+      const s = rand(CONFIG.SHAPE_SIZE_RANGE[0], CONFIG.SHAPE_SIZE_RANGE[1]) * 0.8;
+      const targetScale = s * 0.6;
+      // start tiny so we can scale-in
+      mesh.scale.setScalar(0.001);
+
+      // compute final position
       let pos;
       if (gridPositions.length && Math.random() > CONFIG.LOCATION_RANDOMNESS) {
         pos = gridPositions.shift().clone();
@@ -744,14 +760,30 @@ function updateNavForSections(){
         pos = new THREE.Vector3(r*Math.sin(phi)*Math.cos(theta), r*Math.sin(phi)*Math.sin(theta), r*Math.cos(phi));
       }
       mesh.position.copy(pos);
+
+      // give the mesh a spawn-offset so it can "move into place"
+      const spawnOffset = new THREE.Vector3(randRange(-220,220), randRange(-220,220), randRange(-220,220));
+
       mesh.userData = {
         rotAxis: new THREE.Vector3(Math.random(), Math.random(), Math.random()).normalize(),
         rotSpeed: rand(CONFIG.ROTATION_SPEED_RANGE[0], CONFIG.ROTATION_SPEED_RANGE[1]) * (Math.random()>0.5?1:-1),
         orbitRadius: rand(CONFIG.ORBIT_RADIUS_RANGE[0], CONFIG.ORBIT_RADIUS_RANGE[1]),
         basePos: mesh.position.clone(),
-        orbitPhase: Math.random() * Math.PI * 2
+        orbitPhase: Math.random() * Math.PI * 2,
+        // intro data:
+        intro: {
+          progress: 0,
+          duration: randRange(0.6, 1.4),
+          offset: spawnOffset,
+          targetScale
+        }
       };
-      scene.add(mesh); shapes.push(mesh);
+
+      // move mesh to starting spawn location (so it can animate into basePos)
+      mesh.position.add(mesh.userData.intro.offset);
+
+      scene.add(mesh);
+      shapes.push(mesh);
     }
   }
 
@@ -817,6 +849,8 @@ function animate(){
   if (!running) return;
   requestAnimationFrame(animate);
 
+  const dt = Math.min(clock.getDelta(), 0.05);
+
   // If the page is scrollable, make sure targetScrollY follows the real document scrollTop
   // This ensures programmatic smooth scrolls (window.scrollTo({behavior:'smooth'})) produce
   // continuous updates even if some browsers don't fire scroll events continuously.
@@ -836,15 +870,47 @@ function animate(){
 
   for (let i=0;i<shapes.length;i++){
     const m = shapes[i];
+
+    // rotate
     const angle = m.userData.rotSpeed;
     m.rotateOnAxis(m.userData.rotAxis, angle);
 
-    // orbit calculation (unchanged)
+    // orbit calculation
     const orbitAmount = scrollY * CONFIG.ORBIT_SCROLL_FACTOR;
     const orbitX = Math.cos(orbitAmount + m.userData.orbitPhase) * m.userData.orbitRadius;
     const orbitY = Math.sin(orbitAmount + m.userData.orbitPhase) * m.userData.orbitRadius;
-    m.position.x = m.userData.basePos.x + orbitX;
-    m.position.y = m.userData.basePos.y + orbitY;
+    const orbitOffset = new THREE.Vector3(orbitX, orbitY, 0);
+
+    // --- handle intro animation ---
+    const intro = m.userData.intro;
+    if (intro && intro.progress < 1) {
+      intro.progress = Math.min(1, intro.progress + dt / intro.duration);
+      const eased = easeOutCubic(intro.progress);
+
+      // position: basePos + orbit + remaining offset*(1 - eased)
+      const desired = m.userData.basePos.clone().add(orbitOffset).add(intro.offset.clone().multiplyScalar(1 - eased));
+      m.position.copy(desired);
+
+      // scale and opacity
+      const s = intro.targetScale * eased;
+      m.scale.setScalar(s);
+      if (m.material && m.material.transparent) m.material.opacity = eased;
+
+      // done: remove intro if finished
+      if (intro.progress >= 1) {
+        // clear intro to avoid extra work (optional)
+        delete m.userData.intro;
+        // ensure final exact values
+        m.position.copy(m.userData.basePos.clone().add(orbitOffset));
+        m.scale.setScalar(intro.targetScale);
+        if (m.material && m.material.transparent) m.material.opacity = 1;
+      }
+
+    } else {
+      // normal runtime: apply basePos + orbit (no intro)
+      m.position.x = m.userData.basePos.x + orbitX;
+      m.position.y = m.userData.basePos.y + orbitY;
+    }
   }
 
   renderer.render(scene, camera);
@@ -1436,7 +1502,7 @@ function createScheduleSection() {
 
   const scheduleSection = document.createElement('section');
   scheduleSection.id = 'schedule-section';
-  scheduleSection.className = 'section';
+  scheduleSection.className = 'section fade-in';
 
   scheduleSection.innerHTML = `
    <h3>Schedule</h3>
@@ -1464,7 +1530,6 @@ function createScheduleSection() {
 
   // Add spacer and fade-in
   ensureSpacerAfter(scheduleSection);
-  scheduleSection.classList.add('fade-in');
 
   // Setup event listeners (delegated)
   setupScheduleEventListeners();
@@ -1530,7 +1595,3 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   </script>
 </body>
 </html>
-
-
-
-
