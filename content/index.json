@@ -1,12 +1,13 @@
-[
-  "welcome.md",
-  "lessons info.md",
-  "lesson policy.md",
-  "materials needed.md",
-  "payment.md"
-  
-
-  
-]
-
-
+{
+  "primary": [
+    "welcome.md",
+    "lessons info.md",
+    "lesson policy.md",
+    "materials needed.md", 
+    "payment.md"
+  ],"secondary": [
+   
+    "recommended entry sets.md"
+    
+  ]
+}
