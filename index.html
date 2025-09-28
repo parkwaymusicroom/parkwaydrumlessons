@@ -25,9 +25,74 @@
   })();
 </script>
 
-
-  <!-- Minimal modal/toast styles (inline for availability) -->
+  <!-- Additional styles for page navigation -->
   <style>
+    /* Page navigation styles */
+    .page-nav {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    
+    .page-nav-btn {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 6px;
+      padding: 6px 12px;
+      color: inherit;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+    
+    .page-nav-btn:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.2);
+    }
+    
+    .page-nav-btn.active {
+      background: rgba(0,140,200,0.2);
+      border-color: rgba(0,140,200,0.4);
+    }
+    
+    /* Back button in header */
+    .back-to-home-header {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 6px;
+      padding: 6px 12px;
+      color: inherit;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      font-size: 14px;
+      margin-right: 8px;
+    }
+    
+    .back-to-home-header:hover {
+      background: rgba(255,255,255,0.12);
+      border-color: rgba(255,255,255,0.25);
+    }
+    
+    .secondary-page {
+      display: none;
+    }
+    
+    .secondary-page.active {
+      display: block;
+    }
+    
+    .main-content {
+      width: 100%;
+    }
+    
+    .main-content.hidden {
+      display: none;
+    }
+
     /* =====================================================
        THEME VARIABLES — single place to override modal/toast
        ===================================================== */
@@ -198,6 +263,42 @@
     .submit-toast.show { opacity: 1; transform: translateX(-50%) translateY(-6px); pointer-events: auto; }
 
     .modal-subtitle { font-size: 14px; opacity: 0.9; margin-top:6px; margin-bottom:8px; }
+
+    /* =====================================================
+       Fix for secondary page width and spacing
+       ===================================================== */
+    #secondaryPagesContainer {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .secondary-page {
+      width: 100%;
+      max-width: var(--max-content-width);
+      margin: 40px 0; /* Increased vertical spacing */
+      padding: 30px 0; /* More internal padding for roominess */
+    }
+
+    .secondary-page .md-content {
+      width: 100%;
+    }
+
+    /* Ensure secondary pages have the same styling as primary sections */
+    .secondary-page.section {
+      margin: 40px auto; /* Center with generous spacing */
+      padding: 30px 12px; /* Match primary section padding with more vertical space */
+    }
+
+    /* Additional vertical spacing for better separation */
+    #secondaryPagesContainer .secondary-page:first-child {
+      margin-top: 50px; /* Extra space above first secondary page */
+    }
+
+    #secondaryPagesContainer .secondary-page:last-child {
+      margin-bottom: 50px; /* Extra space below last secondary page */
+    }
   </style>
 
   <!-- Prevent tuner blink by reading CSS var before paint -->
@@ -227,6 +328,7 @@
       <div class="nav-links" id="navLinks" aria-hidden="true"></div>
 
       <div style="display:flex;align-items:center;gap:8px">
+        <button id="backToHomeHeader" class="back-to-home-header" style="display:none;">← Back</button>
         <button id="tunerToggle" class="tuner-toggle-btn" title="Toggle Tuner" aria-pressed="false" data-visible="false">Tuner</button>
         <div class="hamburger">
           <button id="hamburgerBtn" aria-expanded="false" aria-controls="mobileMenu" aria-label="Toggle menu">
@@ -312,7 +414,17 @@
     </aside>
 
     <main id="mainContent" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:12px;z-index:2">
-      <!-- dynamic sections inserted here -->
+      <!-- Page Navigation -->
+      <div class="page-nav" id="pageNav" style="display:none;"></div>
+      
+      <!-- Main Content (default page) -->
+      <div class="main-content" id="mainContentArea">
+        <!-- dynamic sections inserted here -->
+      </div>
+      
+      <!-- Secondary Pages Container -->
+      <div id="secondaryPagesContainer"></div>
+      
       <footer class="fade-in" style="width:100%;max-width:var(--max-content-width);padding:18px 12px;color:rgba(255,255,255,0.6);font-size:13px;text-align:center">
         <div>© <span id="year"></span> — Parkway Music Room</div>
       </footer>
@@ -350,6 +462,140 @@ const CONFIG = {
   SECTION_BORDER_WIDTH: parseInt(cssVars.getPropertyValue('--section-border-width') || cssVars.getPropertyValue('--default-section-border-width') || '1', 10),
   SECTION_BORDER_COLOR: (cssVars.getPropertyValue('--section-border-color') || cssVars.getPropertyValue('--default-section-border-color') || 'rgba(255,255,255,0.06)').trim()
 };
+
+// Global state for page navigation
+const PAGE_STATE = {
+  currentPage: 'home',
+  pages: {
+    home: { type: 'home', name: 'Home' },
+    // secondary pages will be added dynamically
+  }
+};
+
+/* =========================
+   Page Navigation Functions
+   ========================= */
+function showPage(pageId) {
+  console.debug('[showPage] requested', pageId);
+
+  // Hide all pages first
+  document.querySelectorAll('.secondary-page').forEach(page => {
+    page.classList.remove('active');
+  });
+  document.getElementById('mainContentArea').classList.remove('hidden');
+
+  // Show/hide header back button and main content
+  if (pageId === 'home') {
+    console.debug('[showPage] showing home');
+    document.getElementById('backToHomeHeader').style.display = 'none';
+    document.getElementById('mainContentArea').style.display = 'block';
+    PAGE_STATE.currentPage = 'home';
+  } else {
+    console.debug('[showPage] showing secondary page', pageId);
+    document.getElementById('backToHomeHeader').style.display = 'inline-flex';
+    document.getElementById('mainContentArea').style.display = 'none';
+
+    const pageElement = document.getElementById(`page-${pageId}`);
+    if (pageElement) {
+      pageElement.classList.add('active');
+      PAGE_STATE.currentPage = pageId;
+      console.debug('[showPage] activated page element', pageElement);
+    } else {
+      console.warn('[showPage] page element not found for', `page-${pageId}`);
+    }
+  }
+
+  // Hide or show the schedule section depending on page
+  const scheduleEl = document.getElementById('schedule-section');
+  if (scheduleEl) {
+    if (pageId === 'home') {
+      scheduleEl.style.display = '';
+      console.debug('[showPage] schedule visible');
+    } else {
+      scheduleEl.style.display = 'none';
+      console.debug('[showPage] schedule hidden');
+    }
+  }
+
+  // Update active state in page nav
+  document.querySelectorAll('.page-nav-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.page === pageId);
+  });
+
+  // Scroll to top
+  window.scrollTo(0, 0);
+
+  // Close mobile menu if open
+  if (window._mobileMenuHelpers) {
+    window._mobileMenuHelpers.setOpen(false);
+  }
+}
+
+
+function createSecondaryPage(filename, content, title) {
+  // Normalize filename -> safeName (last path segment) and canonical pageId
+  let decodedFilename = filename;
+  try { if (typeof filename === 'string') decodedFilename = decodeURIComponent(filename); } catch (e) { decodedFilename = filename; }
+  const safeName = String(decodedFilename).split('/').pop();
+  const pageId = slugifyName(safeName);
+
+  console.debug('[createSecondaryPage] start', { filename, safeName, pageId, title });
+
+  // If already exists, return the canonical id
+  if (document.getElementById(`page-${pageId}`)) {
+    console.debug('[createSecondaryPage] already exists ->', `page-${pageId}`);
+    return pageId;
+  }
+
+  // Create the section as the TOP-LEVEL page element so it inherits .section styles
+  const section = document.createElement('section');
+  section.id = `page-${pageId}`;
+  section.className = 'section fade-in secondary-page';
+  section.setAttribute('role', 'region');
+  section.setAttribute('aria-label', title || safeName.replace(/\.md$/i,''));
+  section.tabIndex = -1;
+  section.dataset.source = safeName;
+
+  // Insert title + content (content is expected to already be HTML from parseMarkdown)
+  const displayTitle = title || safeName.replace(/\.md$/i,'').replace(/[-_]/g,' ').replace(/\b\w/g,s=>s.toUpperCase());
+  section.innerHTML = `<h3>${displayTitle}</h3><div class="md-content">${content}</div>`;
+
+  const container = document.getElementById('secondaryPagesContainer');
+  if (container) {
+    container.appendChild(section);
+    console.debug('[createSecondaryPage] appended to #secondaryPagesContainer', { pageId, section });
+  } else {
+    document.body.appendChild(section); // defensive fallback
+    console.warn('[createSecondaryPage] #secondaryPagesContainer not found — appended to body as fallback', { pageId });
+  }
+
+  // Ensure spacing behaves like primary sections
+  ensureSpacerAfter(section);
+
+  // Register in PAGE_STATE.pages so navigation builder knows about it (keeps order)
+  PAGE_STATE.pages[pageId] = {
+    type: 'secondary',
+    name: displayTitle,
+    filename
+  };
+
+  console.debug('[createSecondaryPage] done', { pageId, pageEl: document.getElementById(`page-${pageId}`) });
+  return pageId;
+}
+
+
+
+function addPageToNavigation(pageId, pageName) {
+  const pageNav = document.getElementById('pageNav');
+  const btn = document.createElement('button');
+  btn.className = 'page-nav-btn';
+  btn.textContent = pageName;
+  btn.dataset.page = pageId;
+  btn.addEventListener('click', () => showPage(pageId));
+  
+  pageNav.appendChild(btn);
+  pageNav.style.display = 'flex';
+}
 
 /* =========================
    closeMenuThenScrollTo helper
@@ -457,8 +703,16 @@ async function listContentFiles(){
   try {
     const idxResp = await fetch(base + 'index.json', {cache:'no-store'});
     if (idxResp.ok){
-      const arr = await idxResp.json();
-      if (Array.isArray(arr)) return arr.filter(f => /\.md$/i.test(f));
+      const data = await idxResp.json();
+      // Support both array format and object format with primary/secondary pages
+      if (Array.isArray(data)) {
+        return { primary: data.filter(f => /\.md$/i.test(f)), secondary: [] };
+      } else if (typeof data === 'object') {
+        return {
+          primary: Array.isArray(data.primary) ? data.primary.filter(f => /\.md$/i.test(f)) : [],
+          secondary: Array.isArray(data.secondary) ? data.secondary.filter(f => /\.md$/i.test(f)) : []
+        };
+      }
     }
   } catch(e){}
   try {
@@ -469,10 +723,10 @@ async function listContentFiles(){
       const doc = parser.parseFromString(text, 'text/html');
       const anchors = Array.from(doc.querySelectorAll('a[href]'));
       const mdFiles = anchors.map(a => a.getAttribute('href')).filter(h => /\.md$/i.test(h));
-      if (mdFiles.length) return mdFiles;
+      if (mdFiles.length) return { primary: mdFiles, secondary: [] };
     }
   } catch(e){}
-  return [];
+  return { primary: [], secondary: [] };
 }
 
 function buildMenuFromFileList(files){
@@ -480,42 +734,114 @@ function buildMenuFromFileList(files){
   const navLinks = document.getElementById('navLinks');
   mobileMenu.innerHTML = '';
   navLinks.innerHTML = '';
-  const createLink = (filename)=>{
-    const title = filename.replace(/\.md$/i,'').replace(/[-_]/g,' ').replace(/\b\w/g, s=>s.toUpperCase());
+  
+  const createLink = (filename, isSecondary = false)=>{
+    const title = filename.replace(/\.md$/i,'').replace(/[-_]/g, ' ').replace(/\b\w/g, s=>s.toUpperCase());
     const a = document.createElement('a');
     a.href = 'javascript:void(0)';
     a.setAttribute('role','menuitem');
     a.textContent = title;
     a.dataset.filename = filename;
+    a.dataset.isSecondary = isSecondary;
     a.tabIndex = 0;
-    a.addEventListener('click', async (e)=>{
-      e.preventDefault();
-      const id = slugifyName(filename);
-      let sec = document.getElementById(id);
-      if (!sec) sec = await createSectionFromFile(filename);
-      if (sec) closeMenuThenScrollTo(sec,'smooth');
-    });
+    
+    if (isSecondary) {
+      a.addEventListener('click', async (e)=>{
+        e.preventDefault();
+        await loadSecondaryPage(filename);
+      });
+    } else {
+      a.addEventListener('click', async (e)=>{
+        e.preventDefault();
+        const id = slugifyName(filename);
+        let sec = document.getElementById(id);
+        if (!sec) sec = await createSectionFromFile(filename, true);
+        if (sec) closeMenuThenScrollTo(sec,'smooth');
+      });
+    }
+    
     a.addEventListener('keydown', async (e)=> {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); a.click(); }
     });
     return a;
   };
 
-  files.forEach(f=>{
-    const a = createLink(f);
-    mobileMenu.appendChild(a);
-    const ad = a.cloneNode(true);
-    ad.addEventListener('click', async (e)=>{ e.preventDefault(); const filename = a.dataset.filename; const id = slugifyName(filename); let sec = document.getElementById(id); if (!sec) sec = await createSectionFromFile(filename); if (sec) closeMenuThenScrollTo(sec,'smooth'); });
-    ad.addEventListener('keydown', (e)=> { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); ad.click(); } });
-    navLinks.appendChild(ad);
+  // Add primary pages FIRST (preserve order from files.primary)
+  files.primary.forEach(f=>{
+    mobileMenu.appendChild(createLink(f, false));
+    navLinks.appendChild(createLink(f, false));
+  });
+
+  // Add secondary pages AFTER primary (preserve order from files.secondary)
+  files.secondary.forEach(f=>{
+    mobileMenu.appendChild(createLink(f, true));
+    navLinks.appendChild(createLink(f, true));
   });
 }
+
+async function loadSecondaryPage(filename) {
+  const base = CONFIG.MD_BASE_PATH || './content/';
+  let decodedFilename = filename;
+  try { if (typeof filename === 'string') decodedFilename = decodeURIComponent(filename); } catch (e) { decodedFilename = filename; }
+  const safeName = String(decodedFilename).split('/').pop();
+  const requestedPageId = slugifyName(safeName);
+
+  console.debug('[loadSecondaryPage] start', { filename, safeName, requestedPageId });
+
+  // If page already exists (was created previously), show it
+  if (document.getElementById(`page-${requestedPageId}`)) {
+    console.debug('[loadSecondaryPage] page already exists in DOM -> showing', `page-${requestedPageId}`);
+    showPage(requestedPageId);
+    return;
+  }
+
+  try {
+    console.debug('[loadSecondaryPage] fetching', base + encodeURIComponent(safeName));
+    const res = await fetch(base + encodeURIComponent(safeName), {cache:'no-store'});
+    if (!res.ok) throw new Error(`Not found (status ${res.status})`);
+    let text = await res.text();
+    if (!text || !text.trim()) console.warn('[loadSecondaryPage] fetched content is empty');
+
+    let title = null;
+    const lines = text.split(/\r?\n/);
+    for (const L of lines){
+      const m = L.trim().match(/^#{1,3}\s+(.*)/);
+      if (m){ title = m[1].trim(); break; }
+    }
+    if (!title) title = safeName.replace(/\.md$/i,'').replace(/[-_]/g,' ').replace(/\b\w/g,s=>s.toUpperCase());
+
+    // remove leading title/header from content before parsing
+    const stripped = text.replace(/^[\s\r\n]*#{1,3}\s+.*(\r?\n|$)/, '');
+    const content = parseMarkdown(stripped);
+
+    console.debug('[loadSecondaryPage] fetched & parsed', { requestedPageId, title, contentPreview: content.slice ? content.slice(0,200) : null });
+
+    // createSecondaryPage now returns the canonical pageId
+    const createdId = createSecondaryPage(filename, content, title);
+
+    // confirm DOM element exists now
+    const pageEl = document.getElementById(`page-${createdId}`);
+    console.debug('[loadSecondaryPage] createdId, pageEl', { createdId, pageEl });
+
+    // Do NOT add a persistent .page-nav button for secondary pages.
+    // show the created page immediately.
+    showPage(createdId);
+  } catch(err){
+    console.error('[loadSecondaryPage] Failed to load secondary page:', err);
+    const fallbackTitle = safeName.replace(/\.md$/i,'');
+    const createdId = createSecondaryPage(filename, `<p>Could not load: ${safeName} — ${err.message}</p>`, fallbackTitle);
+    // Do NOT add a persistent .page-nav button for secondary pages.
+    showPage(createdId);
+  }
+}
+
+
 
 function slugifyName(name){
   return name.replace(/\.[^/.]+$/,'').trim().toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9\-]/g,'');
 }
 
-async function createSectionFromFile(filename){
+async function createSectionFromFile(filename, isPrimary = true){
   const base = CONFIG.MD_BASE_PATH || './content/';
   let decodedFilename = filename;
   try { if (typeof filename === 'string') decodedFilename = decodeURIComponent(filename); } catch (e) { decodedFilename = filename; }
@@ -550,21 +876,26 @@ async function createSectionFromFile(filename){
     text = text.replace(/^[\s\r\n]*#{1,3}\s+.*(\r?\n|$)/, '');
 
     section.innerHTML = `<h3>${title}</h3><div class="md-content">${parseMarkdown(text)}</div>`;
-    const footer = document.querySelector('footer');
-    footer.parentNode.insertBefore(section, footer);
+    const mainContent = document.getElementById('mainContentArea');
+    mainContent.appendChild(section);
 
     ensureSpacerAfter(section);
-    updateNavForSections();
+    if (isPrimary) {
+      updateNavForSections();
+    }
     return section;
   } catch(err){
     section.innerHTML = `<h3>${safeName.replace(/\.md$/i,'')}</h3><div class="md-placeholder">Could not load: ${safeName} — ${err.message}</div>`;
-    const footer = document.querySelector('footer');
-    footer.parentNode.insertBefore(section, footer);
+    const mainContent = document.getElementById('mainContentArea');
+    mainContent.appendChild(section);
     ensureSpacerAfter(section);
-    updateNavForSections();
+    if (isPrimary) {
+      updateNavForSections();
+    }
     return section;
   }
 }
+
 
 /* =========================
    Spacer helpers
@@ -602,57 +933,181 @@ function refreshAllSpacers(){
    ========================= */
 async function populateContentFromDirectory(){
   const files = await listContentFiles();
-  if (!files || !files.length){
-    updateNavForSections();
-    createScheduleSection();
-    return;
-  }
-
+  
   buildMenuFromFileList(files);
 
-  for (const f of files){
-    await createSectionFromFile(f);
+ // REGISTER SECONDARY FILES IN PAGE_STATE SO updateNavForSections() CAN APPEND THEM LATER
+if (Array.isArray(files.secondary)) {
+  files.secondary.forEach(f => {
+    const safeName = String(f).split('/').pop();
+    const id = slugifyName(safeName);
+    if (!PAGE_STATE.pages[id]) {
+      const title = safeName.replace(/\.md$/i,'').replace(/[-_]/g,' ').replace(/\b\w/g,s=>s.toUpperCase());
+      PAGE_STATE.pages[id] = { type: 'secondary', name: title, filename: f };
+    }
+  });
+}
+
+
+  // Load primary pages as sections on the home page
+  for (const f of files.primary){
+    await createSectionFromFile(f, true);
   }
 
+  // Pre-load secondary pages (or load on demand)
+  // For now, we'll load them on demand when clicked
+  
   createScheduleSection();
   ensureSpacers();
   updateNavForSections();
+  
+  // Set up back button in header
+  document.getElementById('backToHomeHeader').addEventListener('click', () => {
+    showPage('home');
+  });
 }
 
 /* =========================
    updateNavForSections: desktop + mobile
+   (REWRITTEN: deterministic rebuild so primary sections appear
+    first in DOM order, then secondary pages appended after)
    ========================= */
 function updateNavForSections(){
   const navLinks = document.getElementById('navLinks');
   const mobileMenu = document.getElementById('mobileMenu');
+
+  if (!navLinks || !mobileMenu) return;
+
+  // Clear both menus and rebuild explicitly: primary (DOM order) then secondary (PAGE_STATE order)
   navLinks.innerHTML = '';
   mobileMenu.innerHTML = '';
-  const sections = Array.from(document.querySelectorAll('.section'));
+
+  // 1) Primary sections (in DOM order from #mainContentArea)
+  const sections = Array.from(document.querySelectorAll('#mainContentArea .section'));
   sections.forEach(s=>{
     const title = s.querySelector('h3') ? s.querySelector('h3').textContent : (s.dataset.source || s.id);
+    const id = s.id || s.dataset.source || slugifyName(title);
+
     const a = document.createElement('a');
-    a.href = 'javascript:void(0)';
-    a.className = 'nav-link';
-    a.dataset.target = s.id;
-    a.setAttribute('role','link');
+    a.href = '#' + id;
     a.textContent = title;
+    a.setAttribute('role','menuitem');
+    a.dataset.filename = s.dataset.source || id;
+    a.dataset.isSecondary = 'false';
     a.tabIndex = 0;
-    a.addEventListener('click', (e)=>{
-      e.preventDefault();
-      closeMenuThenScrollTo(document.getElementById(s.id),'smooth');
-    });
-    a.addEventListener('keydown', (e)=>{ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); a.click(); } });
+    a.addEventListener('click', (e)=>{ e.preventDefault(); const el = document.getElementById(id); if(el) closeMenuThenScrollTo(el,'smooth'); });
     navLinks.appendChild(a);
 
     const am = a.cloneNode(true);
-    am.addEventListener('click', (e)=>{ 
-      e.preventDefault(); 
-      closeMenuThenScrollTo(document.getElementById(s.id),'smooth');
-    });
-    am.addEventListener('keydown', (e)=>{ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); am.click(); } });
+    am.addEventListener('click', (e)=>{ e.preventDefault(); const el = document.getElementById(id); if(el) closeMenuThenScrollTo(el,'smooth'); });
     mobileMenu.appendChild(am);
   });
+
+  // 2) Now append secondary pages in PAGE_STATE.pages insertion order (primary already added)
+  Object.keys(PAGE_STATE.pages).forEach(pageId => {
+    if (pageId !== 'home' && PAGE_STATE.pages[pageId].type === 'secondary') {
+      const name = PAGE_STATE.pages[pageId].name || pageId;
+      const filename = PAGE_STATE.pages[pageId].filename;
+
+      // desktop link
+      const a = document.createElement('a');
+      a.href = 'javascript:void(0)';
+      a.className = 'nav-link secondary-page-link';
+      a.dataset.page = pageId;
+      a.setAttribute('role','link');
+      a.textContent = name;
+      a.tabIndex = 0;
+
+      a.addEventListener('click', async (e)=>{
+        e.preventDefault();
+        try {
+          // If the page already exists in the DOM just show it
+          if (document.getElementById(`page-${pageId}`)) {
+            showPage(pageId);
+            return;
+          }
+
+          // Otherwise, if we have a filename, load the secondary page then show it
+          if (filename && typeof loadSecondaryPage === 'function') {
+            await loadSecondaryPage(filename);
+            // loadSecondaryPage calls createSecondaryPage and then showPage itself,
+            // but in case it returns/creates the id differently, attempt to show after
+            if (document.getElementById(`page-${pageId}`)) {
+              showPage(pageId);
+            } else {
+              // fallback: find what was created (search by filename data)
+              const created = Object.keys(PAGE_STATE.pages).find(k => PAGE_STATE.pages[k].filename === filename);
+              if (created && document.getElementById(`page-${created}`)) showPage(created);
+              else console.warn('[updateNavForSections] secondary page created but not found', { pageId, filename });
+            }
+            return;
+          }
+
+          // Fallback: just attempt to show by id
+          showPage(pageId);
+        } catch (err) {
+          console.error('[updateNavForSections] error loading/showing secondary page', pageId, err);
+        }
+      });
+
+      a.addEventListener('keydown', (e)=>{ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); a.click(); } });
+      navLinks.appendChild(a);
+
+      // mobile clone uses the same logic
+      const am = a.cloneNode(true);
+      am.addEventListener('click', async (e)=>{ 
+        e.preventDefault();
+        try {
+          if (document.getElementById(`page-${pageId}`)) {
+            showPage(pageId);
+            return;
+          }
+          if (filename && typeof loadSecondaryPage === 'function') {
+            await loadSecondaryPage(filename);
+            if (document.getElementById(`page-${pageId}`)) {
+              showPage(pageId);
+            } else {
+              const created = Object.keys(PAGE_STATE.pages).find(k => PAGE_STATE.pages[k].filename === filename);
+              if (created && document.getElementById(`page-${created}`)) showPage(created);
+              else console.warn('[updateNavForSections] mobile: secondary page created but not found', { pageId, filename });
+            }
+            return;
+          }
+          showPage(pageId);
+        } catch (err) {
+          console.error('[updateNavForSections] mobile error loading/showing secondary page', pageId, err);
+        }
+      });
+      am.addEventListener('keydown', (e)=>{ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); am.click(); } });
+      mobileMenu.appendChild(am);
+    }
+  });
 }
+
+
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// (Removed: previous block that appended secondary pages separately;
+  // updateNavForSections now handles deterministic primary->secondary ordering)
+
 
 /* =========================
    Three.js background (self-contained)
@@ -940,6 +1395,51 @@ function animate(){
     }
   };
 })();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* =========================
    Tuner wiring & CSS var updates
@@ -1264,7 +1764,7 @@ function openScheduleWindowForDay(day = 'tuesday') {
 function openScheduleModal(href){
   if (document.getElementById('__schedule_modal_overlay')) return;
 
-  const scrollY = window.scrollY || document.documentElement.scrollTop || 0;
+  const scrollY = window.scrollY || document.scrollingElement.scrollTop || 0;
   const prevBody = { position: document.body.style.position || '', top: document.body.style.top || '', left: document.body.style.left || '', right: document.body.style.right || '', width: document.body.style.width || '' };
   const prevHtmlOverflow = document.documentElement.style.overflow || '';
   const prevBodyOverflow = document.body.style.overflow || '';
@@ -1522,8 +2022,15 @@ function createScheduleSection() {
 
   `;
 
-  const footer = document.querySelector('footer');
-  footer.parentNode.insertBefore(scheduleSection, footer);
+  // Insert schedule into the main content area so it is hidden when mainContentArea is hidden
+  const mainContent = document.getElementById('mainContentArea');
+  if (mainContent) {
+    mainContent.appendChild(scheduleSection);
+  } else {
+    // fallback to footer insertion if mainContentArea is not present (defensive)
+    const footer = document.querySelector('footer');
+    if (footer && footer.parentNode) footer.parentNode.insertBefore(scheduleSection, footer);
+  }
 
   // Generate inline time blocks (backwards compatibility)
   generateScheduleTimeBlocks();
@@ -1592,6 +2099,7 @@ document.addEventListener('DOMContentLoaded', async ()=>{
 
 (function Small(){ document.getElementById('year').textContent = new Date().getFullYear(); })();
 
-  </script>
-</body>
+
+ </script>
+</body> 
 </html>
