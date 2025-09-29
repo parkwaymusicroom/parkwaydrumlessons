@@ -40,13 +40,13 @@
   - This is the best all-in-one option I've seen: [Ludwig-Questlove](https://a.co/d/as3NZBy)  
   - **Notes:** This route is about as cheap as it gets unless you buy used. However, if the student keeps playing, you’ll almost certainly end up upgrading to real cymbals (and possibly another kit). Think of this as the “see if the spark sticks” option.  
 
-<br><br>
+<br><br><br><br>
 
 - **Step up:** (Around $950) cheapest kit + **quality cymbals** = solid starter setup.  
   - The all-in-one but with real cymbals: [Ludwig-Questlove](https://a.co/d/as3NZBy) + [Dream Crash/Ride](https://a.co/d/74wCcVR) + [Dream Hi Hat](https://a.co/d/6U7LlzQ)  
   - **Notes:** This balances cost and longevity. The cymbals are professional-grade and will grow with the student. They also hold resale value, so you can recover a fair portion of your investment if needed. This makes it a reliable “middle ground” option.  
 
-<br><br>
+<br><br><br><br>
 
 - **Grow-into kit (compact & quality):** (Around $1600) space-friendly, legit setup.  
   - Will sound good and play well:  
@@ -56,3 +56,4 @@
         - + [Dream Crash/Ride](https://a.co/d/74wCcVR)  
         - + [Dream Hi Hat](https://a.co/d/6U7LlzQ)  
   - **Notes:** This setup ensures the student can play well into the future without needing major upgrades—just regular wear-and-tear replacements. It’s compact, high-quality, avoids the “buy twice” problem, and also holds **decent resale value** if you ever decide to move on from it.  
+
