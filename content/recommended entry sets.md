@@ -48,7 +48,7 @@
         - + [Dream Crash/Ride](https://a.co/d/74wCcVR) 
         - + [Dream Hi Hat](https://a.co/d/6U7LlzQ)
 
-
+<br><br><br><br>
 
 ### A Few Extra Notes
 
@@ -56,3 +56,4 @@
 - The **all-in-one option** is the cheapest unless you buy used, but you’ll almost certainly need to upgrade to real cymbals (and possibly another kit) if they continue playing.  
 - The **middle option** includes quality cymbals that can grow with the student and hold resale value, letting you recover part of your investment later.  
 - The **final option** provides a compact, high-quality setup that can be played for years with no major upgrades needed beyond normal wear-and-tear.
+
