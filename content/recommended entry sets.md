@@ -7,7 +7,6 @@
 2. **Hardware** (pedals, stands, throne/seat)  
 3. **Cymbals**  
 
- 
 
 
 <br><br><br><br><br><br><br><br>
@@ -51,8 +50,9 @@
 
 
 
+### A Few Extra Notes
 
-
-###A few extra notes
-
-- There are options out there that can land anywhere in between these price points above, but all things considered, you will save money with one of these routes. Heres why, the all-in-one option is about as cheap as it gets unless you buy used, but comes with the guarantee that you will be buying another kit or the very least real cymbols in the future, if they continue playing. The middle option gives you actual cymbals that will grow with the student and can always be sold at a fair and reasonable portion of your initial investment. The final option will assure you that they can play this setup well into the future with no need to buy anything else beyond normal expected wear and tear. 
+- There are plenty of options that fall between these price points, but choosing one of the above routes usually saves money in the long run.  
+- The **all-in-one option** is the cheapest unless you buy used, but you’ll almost certainly need to upgrade to real cymbals (and possibly another kit) if they continue playing.  
+- The **middle option** includes quality cymbals that can grow with the student and hold resale value, letting you recover part of your investment later.  
+- The **final option** provides a compact, high-quality setup that can be played for years with no major upgrades needed beyond normal wear-and-tear.
