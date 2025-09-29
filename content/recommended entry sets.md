@@ -29,32 +29,30 @@
 ### Buying Used
 
 - Local marketplaces (like Facebook) can offer very great deals.  
-- Selection is hit-or-miss, having some guidance is recommended.
+- Selection is hit-or-miss, having some guidance is recommended.  
+- *(Let me know if you’d like me to send you any good used deals I come across on Marketplace.)*
 
 <br><br><br><br><br><br><br><br>
 
-### Recommended New Paths
+### Recommended New Paths  
+
 - **Cheapest entry:** (Around $350) a small all-in-one kit (good for trying it out, but temporary).  
-  - This is the best all-in-one option I've seen: [Ludwig-Questlove](https://a.co/d/as3NZBy)
+  - This is the best all-in-one option I've seen: [Ludwig-Questlove](https://a.co/d/as3NZBy)  
+  - **Notes:** This route is about as cheap as it gets unless you buy used. However, if the student keeps playing, you’ll almost certainly end up upgrading to real cymbals (and possibly another kit). Think of this as the “see if the spark sticks” option.  
+
 <br><br>
-- **Step up:** (Around $950) cheapest kit + **Quality cymbals** = solid starter setup.  
-  - The all-in-one but with real cymbals: [Ludwig-Questlove](https://a.co/d/as3NZBy) + [Dream Crash/Ride](https://a.co/d/74wCcVR) + [Dream Hi Hat](https://a.co/d/6U7LlzQ)
+
+- **Step up:** (Around $950) cheapest kit + **quality cymbals** = solid starter setup.  
+  - The all-in-one but with real cymbals: [Ludwig-Questlove](https://a.co/d/as3NZBy) + [Dream Crash/Ride](https://a.co/d/74wCcVR) + [Dream Hi Hat](https://a.co/d/6U7LlzQ)  
+  - **Notes:** This balances cost and longevity. The cymbals are professional-grade and will grow with the student. They also hold resale value, so you can recover a fair portion of your investment if needed. This makes it a reliable “middle ground” option.  
+
 <br><br>
+
 - **Grow-into kit (compact & quality):** (Around $1600) space-friendly, legit setup.  
-  - Will sound good and play well: 
-    - PDP New Yorker 4PC Shell Pack [Black Sparkle](https://www.sweetwater.com/store/detail/PDNY1604BO--pdp-new-yorker-4-piece-shell-pack-black-onyx-sparkle) or [Pink Sparkle](https://www.sweetwater.com/store/detail/PDNY1604PR--pdp-new-yorker-4-piece-shell-pack-pale-rose-sparkle) or [Green Sparkle](https://www.sweetwater.com/store/detail/PDNY1604EL--pdp-new-yorker-4-piece-shell-pack-electric-green-sparkle) 
-        - + [PDP 800 Series Pedal Hardware Pack](https://a.co/d/hhCd1cz) 
-        - + [Seat/Throne](https://a.co/d/0EFhQnq) 
-        - + [Dream Crash/Ride](https://a.co/d/74wCcVR) 
-        - + [Dream Hi Hat](https://a.co/d/6U7LlzQ)
-
-<br><br><br><br><br><br>
-
-### Notes On These Options
-
-- There are plenty of options that fall between these price points, but choosing one of the above routes usually saves money in the long run.  
-- The **all-in-one option** is the cheapest unless you buy used, but you’ll almost certainly need to upgrade to real cymbals (and possibly another kit) if they continue playing.  
-- The **middle option** includes quality cymbals that can grow with the student and hold resale value, letting you recover part of your investment later.  
-- The **final option** provides a compact, high-quality setup that can be played for years with no major upgrades needed beyond normal wear-and-tear.
-
-
+  - Will sound good and play well:  
+    - PDP New Yorker 4PC Shell Pack [Black Sparkle](https://www.sweetwater.com/store/detail/PDNY1604BO--pdp-new-yorker-4-piece-shell-pack-black-onyx-sparkle) or [Pink Sparkle](https://www.sweetwater.com/store/detail/PDNY1604PR--pdp-new-yorker-4-piece-shell-pack-pale-rose-sparkle) or [Green Sparkle](https://www.sweetwater.com/store/detail/PDNY1604EL--pdp-new-yorker-4-piece-shell-pack-electric-green-sparkle)  
+        - + [PDP 800 Series Pedal Hardware Pack](https://a.co/d/hhCd1cz)  
+        - + [Seat/Throne](https://a.co/d/0EFhQnq)  
+        - + [Dream Crash/Ride](https://a.co/d/74wCcVR)  
+        - + [Dream Hi Hat](https://a.co/d/6U7LlzQ)  
+  - **Notes:** This setup ensures the student can play well into the future without needing major upgrades—just regular wear-and-tear replacements. It’s compact, high-quality, avoids the “buy twice” problem, and also holds **decent resale value** if you ever decide to move on from it.  
