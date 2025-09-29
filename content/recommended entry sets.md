@@ -48,3 +48,11 @@
         - + [Seat/Throne](https://a.co/d/0EFhQnq) 
         - + [Dream Crash/Ride](https://a.co/d/74wCcVR) 
         - + [Dream Hi Hat](https://a.co/d/6U7LlzQ)
+
+
+
+
+
+###A few extra notes
+
+- There are options out there that can land anywhere in between these price points above, but all things considered, you will save money with one of these routes. Heres why, the all-in-one option is about as cheap as it gets unless you buy used, but comes with the guarantee that you will be buying another kit or the very least real cymbols in the future, if they continue playing. The middle option gives you actual cymbals that will grow with the student and can always be sold at a fair and reasonable portion of your initial investment. The final option will assure you that they can play this setup well into the future with no need to buy anything else beyond normal expected wear and tear. 
